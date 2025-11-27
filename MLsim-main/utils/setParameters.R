@@ -264,7 +264,7 @@ rm(P_pwl, corN_pwl, corNp, corNpPWL, corVec, rP, rPpwl, rX) # remove temporary v
 setParam$dgp$sigmaE <- 1
 
 # measurement error in predictors 
-setParam$dgp$reliability <- c(0.6, 0.8, 1)
+setParam$dgp$reliability <- c(0.7, 1)
 
 ################################################################################
 # model fitting
