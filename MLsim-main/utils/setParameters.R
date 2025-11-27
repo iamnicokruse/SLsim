@@ -53,8 +53,8 @@ setParam$dgp$nonlinEffects3 <- sapply((setParam$dgp$p+1):(setParam$dgp$p+setPara
 setParam$dgp$pwlinEffects <- c("Var5.2nd", "Var6.2nd", "Var7.2nd")
 
 # proportion of effect explained by linear effects vs. interaction
-setParam$dgp$percentLinear <- c(0.5, 0.8, 0.2) 
-setParam$dgp$percentInter <- c(0.5, 0.2, 0.8)
+setParam$dgp$percentLinear <- c(0.5, 0.0, 1.0) 
+setParam$dgp$percentInter <- c(0.5, 1.0, 0.0)
 setParam$dgp$percentPoly <- c(0, 0, 0)
 
 # # simulate conditions in which interactions, nonlinear and piecewise linear effects get 100% R² 
