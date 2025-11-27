@@ -1,10 +1,27 @@
-################################################################################
-#_______________________Super Learner Simulation Project_______________________#
-################################################################################
+###############################################################################
+#_____________________________SLsim master script_____________________________#
+###############################################################################
 
 # packages
+library("caret")
+library("caretEnsemble")
+library("glmnet")
+library("ranger") 
+library("gbm")
+library("tidyverse")
 
 # parameters and specific functions
+source("MLsim-main/utils/simTools.R")
+source("MLsim-main/utils/setParameters.R")
+
+source("MLsim-main/utils/sampleInteractionData.R")
+source("MLsim-main/utils/sampleNonlinearData.R")
+source("MLsim-main/utils/samplePiecewiseLinearData.R")
+
+source("SLtools.R")
+source("SLfunction")
+source("Model_evaluation.R")
+
 
 # simulation functions
 # analysis functions

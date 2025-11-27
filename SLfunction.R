@@ -1,5 +1,18 @@
 # SuperLearner function
 
+# Pre-allocated result list ####
+# resultList <- list(
+#   train_perf_all = data.frame(methods = rep(NA, length(fileList)), dataset = rep(NA, length(fileList) * length(methods)), 
+#                               TrainRMSE = (rep(NA_real_, length(fileList) * length(methods))), TrainRsquared = (rep(NA_real_, length(fileList) * length(methods))),
+#                               TrainMAE = (rep(NA_real_, length(fileList) * length(methods))), iter = rep(NA_real_, length(fileList) * length(methods)),
+#                               stringsAsFactors = F),
+#   
+#   test_perf_all =  data.frame(methods = rep(NA, length(fileList)), dataset = rep(NA, length(fileList) * length(methods)), 
+#                               TestRMSE = (rep(NA_real_, length(fileList) * length(methods))), TestRsquared = (rep(NA_real_, length(fileList) * length(methods))),
+#                               TestMAE = (rep(NA_real_, length(fileList) * length(methods))), iter = rep(NA_real_, length(fileList) * length(methods)),
+#                               stringsAsFactors = F)
+# )
+
 runSL <- function(file, testsample, iter = 1, baselearner, metalearner) {
   
   # fileList is list()-object with files of training samples
