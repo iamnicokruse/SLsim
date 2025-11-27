@@ -12,7 +12,7 @@ setParam$dgp$nSamples <- setParam$dgp$nTrain + setParam$dgp$nTest
 #   ... or in rda files for every individual sample (singleSamples = T) 
 setParam$dgp$singleSamples <- TRUE
 
-setParam$dgp$N <- c(100, 300, 1000) # number of observations
+setParam$dgp$N <- c(100, 1000, 5000) # number of observations
 
 # !if 50% of training sample size is used as test sample, test sample sizes vary across N observation conditions
 #   as a result, the empirical SE of Rsquared changes according to N 
