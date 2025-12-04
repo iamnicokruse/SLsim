@@ -10,7 +10,7 @@ setParam$dgp$nSamples <- setParam$dgp$nTrain + setParam$dgp$nTest
 # this is only a technical argument which determines if data is saved in ...
 #   ... either one big rda file which heavily stresses RAM in parallelisation
 #   ... or in rda files for every individual sample (singleSamples = T) 
-setParam$dgp$singleSamples <- TRUE
+# setParam$dgp$singleSamples <- TRUE # data won't be saved as file(s)
 
 setParam$dgp$N <- c(100, 1000, 5000) # number of observations
 
