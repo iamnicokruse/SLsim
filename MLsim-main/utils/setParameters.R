@@ -85,11 +85,14 @@ setParam$fit$optimTol <- 1e-5
 setParam$fit$optimBetaTol <- 1e-5
 
 # read in coefficients as results from bruteForceB.R and bruteForceNonLinearB.R
-# bruteForceB_inter <- read.table("MLsim-main/utils/bruteForceBcoeff_inter.csv", header = T, sep = ",")
+bruteForceB_inter_rel0.7 <- read.table("MLsim-main/utils/bruteForceBcoeff_inter_rel0.7.csv", header = T, sep = ",")
+bruteForceB_inter_rel1.0 <- read.table("MLsim-main/utils/bruteForceBcoeff_inter_rel1.0.csv", header = T, sep = ",")
 # bruteForceB_nl <- read.table("utils/bruteForceBcoeff_nonlinear.csv", header = T, sep = ",")
-# bruteForceB_nl3 <- read.table("MLsim-main/utils/bruteForceBcoeff_nonlinear3.csv", header = T, sep = ",")
+bruteForceB_nl3_rel0.7 <- read.table("MLsim-main/utils/bruteForceBcoeff_nonlinear3_rel0.7.csv", header = T, sep = ",")
+bruteForceB_nl3_rel1.0 <- read.table("MLsim-main/utils/bruteForceBcoeff_nonlinear3_rel1.0.csv", header = T, sep = ",")
 # bruteForceB_nl <- read.table("utils/bruteForceBcoeff_nonlinear_plus.csv", header = T, sep = ",")
-# bruteForceB_pwl <- read.table("MLsim-main/utils/bruteForceBcoeff_piecewise.csv", header = T, sep = ",")
+bruteForceB_pwl_rel0.7 <- read.table("MLsim-main/utils/bruteForceBcoeff_piecewise_rel0.7.csv", header = T, sep = ",")
+bruteForceB_pwl_rel1.0 <- read.table("MLsim-main/utils/bruteForceBcoeff_piecewise_rel1.0.csv", header = T, sep = ",")
 
 # reorganize coefficients
 # # lin vs. interaction
