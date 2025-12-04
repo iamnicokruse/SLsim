@@ -7,7 +7,7 @@
 #     - Var1:Var2 = Var1:Var4 = Var2:Var3 = Var3:Var4 = ?
 #     - Var1:Var3 = Var2:Var4 = 0
 
-# Rsquared either splits 20:80, 50:50 or 80:20 for interaction and linear effects respectively
+# Rsquared either splits 0:100, 50:50 or 100:0 for interaction and linear effects respectively    # new rsquared splits planned
 # squared multiple correlation (r_y,yhat)^2 = multiple coefficient of determination
 # multiple coefficient of determination = sum of semipartial determinantes (squared 
 #     semipartial correlations) of increasingly higher order
@@ -27,7 +27,9 @@ createFolder(logFolder)
 
 pTrash <- setParam$bruteForceB$pTrash
 N <- setParam$bruteForceB$N
-reliability <- setParam$bruteForceB$reliability
+reliability <- setParam$bruteForceB$reliability[1] # two values for reliability
+                                                   # first used value is 0.7
+
 
 P <- setParam$dgp$p + pTrash # total number of variables
 
@@ -86,7 +88,7 @@ covExclusive/varProduct
 
 # build correlation matrix as block structure with ...
 #   ... block for linear predictors
-#   ... block for inetraction terms (products)
+#   ... block for interaction terms (products)
 corLin <- lavaan::lav_matrix_upper2full(rep(rho, setParam$dgp$p * (setParam$dgp$p-1) / 2), diagonal = F)
 diag(corLin) <- 1
 
@@ -348,5 +350,5 @@ checkAcc <- do.call(rbind, lapply(seq_along(bruteForceB), function(subList) {
 betaData <- cbind(condGrid, betaCoef, checkAcc)
 round(betaData, 3)
 
-# write.csv(betaData, "utils/bruteForceBcoeff_inter.csv", row.names=FALSE)
-# bruteForceB <- read.table("utils/bruteForceBcoeff_inter.csv", header = T, sep = ",")
+# write.csv(betaData, "MLsim-main/utils/bruteForceBcoeff_inter_rel0.7.csv", row.names=FALSE)
+# bruteForceB <- read.table("MLsim-main/utils/bruteForceBcoeff_inter_rel0.7.csv", header = T, sep = ",")
