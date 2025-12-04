@@ -75,7 +75,7 @@ setParam$dgp$Rsquared <- c(.20, .50, .80)
 ### these are the parameters that are used in bruteForceB.R and bruteForceNonLinearB.R
 setParam$bruteForceB$pTrash <- 0
 setParam$bruteForceB$N <- 100000
-setParam$bruteForceB$reliability <- 1
+setParam$bruteForceB$reliability <- c(0.7, 1)
 setParam$bruteForceB$poly <- setParam$dgp$poly
 
 # parameters for beta coefficient estimation
