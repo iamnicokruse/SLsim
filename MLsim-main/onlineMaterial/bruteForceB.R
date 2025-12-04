@@ -27,8 +27,8 @@ createFolder(logFolder)
 
 pTrash <- setParam$bruteForceB$pTrash
 N <- setParam$bruteForceB$N
-reliability <- setParam$bruteForceB$reliability[1] # two values for reliability
-                                                   # first used value is 0.7
+reliability <- setParam$bruteForceB$reliability[2] # two values for reliability
+                                                   # second used value is 1.0
 
 
 P <- setParam$dgp$p + pTrash # total number of variables
@@ -350,5 +350,5 @@ checkAcc <- do.call(rbind, lapply(seq_along(bruteForceB), function(subList) {
 betaData <- cbind(condGrid, betaCoef, checkAcc)
 round(betaData, 3)
 
-# write.csv(betaData, "MLsim-main/utils/bruteForceBcoeff_inter_rel0.7.csv", row.names=FALSE)
-# bruteForceB <- read.table("MLsim-main/utils/bruteForceBcoeff_inter_rel0.7.csv", header = T, sep = ",")
+# write.csv(betaData, "MLsim-main/utils/bruteForceBcoeff_inter_rel1.0.csv", row.names=FALSE)
+# bruteForceB <- read.table("MLsim-main/utils/bruteForceBcoeff_inter_rel1.0.csv", header = T, sep = ",")
