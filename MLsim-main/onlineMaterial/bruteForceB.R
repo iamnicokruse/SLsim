@@ -18,8 +18,8 @@ library(truncnorm)
 library(parallel)
 
 # load parameters & custom functions 
-source("utils/setParameters.R") # parameter values
-source("utils/simTools.R") # functions for data simulation
+source("MLsim-main/utils/setParameters.R") # parameter values
+source("MLsim-main/utils/simTools.R") # functions for data simulation
 
 # generate folder for log files
 logFolder = "log"
