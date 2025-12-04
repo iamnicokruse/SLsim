@@ -23,8 +23,7 @@ source("MLsim-main/utils/simTools.R")
 
 # analysis functions
 source("SLtools.R")
-source("SLfunction")
-source("Model_evaluation.R")
+source("SLfunction.R")
 
 # generate folder for log files (if needed!)
 logFolder = "log"
