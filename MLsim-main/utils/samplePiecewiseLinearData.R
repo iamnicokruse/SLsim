@@ -147,5 +147,6 @@ samplePiecewiseLinearData <- function() {
     # # to save big test sample
     # testFileName <- paste0("simDataN", N, "_pTrash", pTrash, "_rel", reliability, "_", data, ".rda")
     # save(dataList, file = paste0(dgpFolder, "/", testFileName))
-  }, future.seed = TRUE)
+  }, future.seed = TRUE,
+  future.packages = future_packages)
 }

@@ -94,5 +94,6 @@ sampleInteractionData <- function() {
                      R2 = R2, # without measurement error
                      R2_wME = R2_wME) # with measurement error
     
-  }, future.seed = TRUE)
+  }, future.seed = TRUE,
+  future.packages = future_packages)
 }
