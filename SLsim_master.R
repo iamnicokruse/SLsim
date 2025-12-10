@@ -11,9 +11,11 @@ library(gbm)
 library(tidyverse)
 library(future)
 library(future.apply)
+library(mvtnorm)
+library(truncnorm)
 
 # package string for future_lapply
-future_packages = c("Matrix")
+future_packages = c("Matrix","mvtnorm", "truncnorm")
 
 # parameters
 source("MLsim-main/utils/setParameters.R")
