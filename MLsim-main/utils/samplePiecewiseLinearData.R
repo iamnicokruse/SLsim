@@ -134,9 +134,9 @@ samplePiecewiseLinearData <- function() {
     }
     
     # recalculate R2 for predictors with measurement error
-    R2_wME <- sapply(seq_len(ncol(bMatrix)), function(x) {
-      var(X_final %*% bMatrix[,x]) / (var(X_int %*% bMatrix[,x]) + setParam$dgp$sigmaE^2)
-    })
+    # R2_wME <- sapply(seq_len(ncol(bMatrix)), function(x) {
+    #   var(X_final %*% bMatrix[,x]) / (var(X_int %*% bMatrix[,x]) + setParam$dgp$sigmaE^2)
+    # })
     
     # save ...
     #     ... yMat with dependent variable for all R2 - lin/inter effect conditions in columns
@@ -146,8 +146,8 @@ samplePiecewiseLinearData <- function() {
     #     ... R2_wME based on data with measurement error
     dataList <- list(yMat = yMatrix, # criterion (DV) with R2 x lin_inter in columns
                      X_int = X_final, # these are the predictors (IV) with measurement error
-                     R2 = R2, # without measurement error
-                     R2_wME = R2_wME) # with measurement error
+                     R2 = R2) #, # without measurement error
+                   #  R2_wME = R2_wME) # with measurement error
     
     # # to save big test sample
     # testFileName <- paste0("simDataN", N, "_pTrash", pTrash, "_rel", reliability, "_", data, ".rda")
