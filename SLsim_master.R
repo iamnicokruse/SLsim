@@ -68,6 +68,30 @@ gridFull <- rbind(gridFull,
 # length(unique(gridFull$sampleSeed))
 
 # sample data im parallel
+createData <- function(data, N, reliability, sampleSeed){
+  
+  if (data == "inter"){
+    environment(sampleInteractionData) <- environment()  
+  } else if (data == "nonlinear3") {
+    environment(sampleNonlinearData) <- environment()  
+  } else if (data == "pwlinear") {
+    environment(samplePiecewiseLinearData) <- environment()  
+  } else {
+    stop("We can only simulate inter, nonlinear or piecewise linear data!")
+  }
+  
+  # Initiate cluster
+  plan(multisession, workers = nCoresSampling) # if not run with Rstudio but R, multicore can be used (FORKING)
+  
+  
+  if (data == "inter"){
+    sampleInteractionData() # run function to actually create data set
+  } else if (data == "nonlinear3") {
+    sampleNonlinearData()
+  } else if (data == "pwlinear") {
+    samplePiecewiseLinearData()
+  }
+}
 
 # simulate and return data
 
