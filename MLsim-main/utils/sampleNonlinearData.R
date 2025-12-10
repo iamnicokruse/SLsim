@@ -24,15 +24,6 @@ sampleNonlinearData <- function() {
   # reliability <- 0.6
   # data <- "nonlinear3"
   
-  dgpFolder <- paste0(dataFolder, "/", data)
-  createFolder(dgpFolder)
-  
-  # create folder to save data in single sample files
-  if (setParam$dgp$singleSamples) {
-    sampleFolder <- paste0("/simDataN", N, "_pTrash", pTrash, "_rel", reliability)
-    createFolder(paste0(dgpFolder, sampleFolder))
-  }
-  
   # sample data in parallel; 
   # generate samples in parallel as samples are drawn as random & independent
   data <- parLapply(cl, seq_len(setParam$dgp$nSamples), function(iSample) {
@@ -153,30 +144,10 @@ sampleNonlinearData <- function() {
     #     ... R2_wME based on data with measurement error
     dataList <- list(yMat = yMatrix, # criterion (DV) with R2 x lin_inter in columns
                      X_int = X_final, # these are the predictors (IV) with measurement error
-                     R2 = R2) #, # without measurement error
-                     # R2_wME = R2_wME) # with measurement error
+                     R2 = R2, # without measurement error
+                     R2_wME = R2_wME) # with measurement error
     
     # testFileName <- paste0("simDataN", N, "_pTrash", pTrash, "_rel", reliability, "_", data, ".rda")
     # save(dataList, file = paste0(dgpFolder, "/", testFileName))
-    
-    if (setParam$dgp$singleSamples){
-      sampleNames <- c(seq_len(setParam$dgp$nTrain),
-                       paste0("test", seq_len(setParam$dgp$nTest)))
-      fileName <- paste0("sample_", sampleNames[iSample], ".rda")
-      save(dataList, file = paste0(dgpFolder, sampleFolder, "/", fileName))
-    } else {
-      dataList
-    }
   })
-  
-  # save data in one big rda file (with all samples)
-  if (!setParam$dgp$singleSamples) {
-    # save to one big rda file with nSamples list entries! 
-    #   all training and test sample in one big rda file  
-    names(data) <- c(seq_len(setParam$dgp$nTrain), 
-                     paste0("test", seq_len(setParam$dgp$nTest)))
-    
-    fileName <- paste0("simDataN", N, "_pTrash", pTrash, "_rel", reliability, ".rda")
-    save(data, file = paste0(dgpFolder, "/", fileName))
-  }
 }

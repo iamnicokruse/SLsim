@@ -9,14 +9,6 @@ sampleInteractionData <- function() {
   # reliability <- 1
   # data <- "inter"
   
-  dgpFolder <- paste0(dataFolder, "/", data)
-  createFolder(dgpFolder)
-  
-  if (setParam$dgp$singleSamples) {
-    sampleFolder <- paste0("/simDataN", N, "_pTrash", pTrash, "_rel", reliability)
-    createFolder(paste0(dgpFolder, sampleFolder))
-  }
-  
   # sample data in parallel; 
   # generate samples in parallel as samples are drawn as random & independent
   data <- parLapply(cl, seq_len(setParam$dgp$nSamples), function(iSample) {
@@ -102,26 +94,5 @@ sampleInteractionData <- function() {
                      R2 = R2, # without measurement error
                      R2_wME = R2_wME) # with measurement error
     
-    # testFileName <- paste0("simDataN", N, "_pTrash", pTrash, "_rel", reliability, "_", data, ".rda")
-    # save(dataList, file = paste0(dgpFolder, "/", testFileName))
-    
-    if (setParam$dgp$singleSamples){
-      sampleNames <- c(seq_len(setParam$dgp$nTrain),
-                       paste0("test", seq_len(setParam$dgp$nTest)))
-      fileName <- paste0("sample_", sampleNames[iSample], ".rda")
-      save(dataList, file = paste0(dgpFolder, sampleFolder, "/", fileName))
-    } else {
-      dataList
-    }
   })
-  
-  if (!setParam$dgp$singleSamples) {
-    # save to one big rda file with nSamples list entries! 
-    #   all training and test sample in one big rda file  
-    names(data) <- c(seq_len(setParam$dgp$nTrain), 
-                     paste0("test", seq_len(setParam$dgp$nTest)))
-    
-    fileName <- paste0("simDataN", N, "_pTrash", pTrash, "_rel", reliability, ".rda")
-    save(data, file = paste0(dgpFolder, "/", fileName))
-  }
 }
