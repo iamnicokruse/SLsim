@@ -12,6 +12,9 @@ library(tidyverse)
 library(future)
 library(future.apply)
 
+# package string for future_lapply
+future_packages = c("Matrix")
+
 # parameters
 source("MLsim-main/utils/setParameters.R")
 
@@ -26,9 +29,9 @@ source("SLtools.R")
 source("SLfunction.R")
 
 # generate folder for log files (if needed!)
-logFolder = "log"
-createFolder(logFolder) # we do not save data but maybe we need to extract log 
-                        # files in case of errors
+# logFolder = "log"
+# createFolder(logFolder) # we do not save data but maybe we need to extract log 
+                          # files in case of errors
 
 # set numbers of Cores to use in parallel computing
 nCoresSampling <- 3 # needs to be changed when cluster is used
@@ -94,6 +97,8 @@ createData <- function(data, N, reliability, sampleSeed){
 }
 
 # simulate and return data
+pTrash <- 25
+out <- do.call(mapply, c(FUN = createData, gridFull))
 
 # fit super learner to data and save results
 
