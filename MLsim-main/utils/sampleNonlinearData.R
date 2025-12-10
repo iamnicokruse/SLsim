@@ -136,6 +136,11 @@ sampleNonlinearData <- function() {
       X_final <- rmDuplicatePoly(X_final)
     }
     
+    # recalculate R2 for predictors with measurement error
+    R2_wME <- sapply(seq_len(ncol(bMatrix)), function(x) {
+      var(X_final %*% bMatrix[,x]) / (var(X_int %*% bMatrix[,x]) + setParam$dgp$sigmaE^2)
+    })
+    
     # save ...
     #     ... yMat with dependent variable for all R2 - lin/inter effect conditions in columns
     #     ... X_int predictor matrix (identical for all R2 - lin/inter effect conditions)
