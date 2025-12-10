@@ -26,7 +26,7 @@ sampleNonlinearData <- function() {
   
   # sample data in parallel; 
   # generate samples in parallel as samples are drawn as random & independent
-  data <- parLapply(cl, seq_len(setParam$dgp$nSamples), function(iSample) {
+  data <- future_lapply(seq_len(setParam$dgp$nSamples), function(iSample) {
     
     P <- setParam$dgp$p + setParam$dgp$pNL3 + pTrash # total number of variables  
     

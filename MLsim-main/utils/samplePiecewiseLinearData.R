@@ -8,19 +8,10 @@ samplePiecewiseLinearData <- function() {
   # dgpFolder <- paste0(dataFolder, "/bigTestSamples")
   # reliability <- 1
   # data <- "pwlinear"
-
-  dgpFolder <- paste0(dataFolder, "/", data)
-  createFolder(dgpFolder)
-  
-  # create folder to save data in single sample files
-  if (setParam$dgp$singleSamples) {
-    sampleFolder <- paste0("/simDataN", N, "_pTrash", pTrash, "_rel", reliability)
-    createFolder(paste0(dgpFolder, sampleFolder))
-  }
   
   # sample data in parallel; 
   # generate samples in parallel as samples are drawn as random & independent
-  data <- parLapply(cl, seq_len(setParam$dgp$nSamples), function(iSample) {
+  data <- future_lapply(seq_len(setParam$dgp$nSamples), function(iSample) {
     
     P <- setParam$dgp$p + setParam$dgp$pPWL + pTrash # total number of variables
     # generate matrix of (almost) uncorrelated predictors
