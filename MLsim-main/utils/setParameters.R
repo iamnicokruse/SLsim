@@ -101,6 +101,14 @@ setParam$dgp$trueB$inter$lin[["R2"]]    <- NULL
 row.names(setParam$dgp$trueB$inter$inter) <- setParam$dgp$trueB$inter$inter[["R2"]]
 setParam$dgp$trueB$inter$inter[["R2"]]    <- NULL
 
+cn <- colnames(setParam$dgp$trueB$inter$lin)
+cn <- ifelse(grepl("\\.", cn), cn, paste0(cn, ".0"))
+colnames(setParam$dgp$trueB$inter$lin) <- cn
+
+cn <- colnames(setParam$dgp$trueB$inter$inter)
+cn <- ifelse(grepl("\\.", cn), cn, paste0(cn, ".0"))
+colnames(setParam$dgp$trueB$inter$inter) <- cn
+
 # # # lin vs. nonlinear
 # setParam$dgp$trueB$nonlinear$lin <- reshape2::dcast(bruteForceB_nl, R2 ~ lin, value.var = "betaLin")
 # setParam$dgp$trueB$nonlinear$nonlinear <- reshape2::dcast(bruteForceB_nl, R2 ~ inter, value.var = "betaInter")
@@ -123,6 +131,14 @@ setParam$dgp$trueB$nonlinear3$lin[["R2"]]    <- NULL
 row.names(setParam$dgp$trueB$nonlinear3$nonlinear) <- setParam$dgp$trueB$nonlinear3$nonlinear[["R2"]]
 setParam$dgp$trueB$nonlinear3$nonlinear[["R2"]]    <- NULL
 
+cn <- colnames(setParam$dgp$trueB$nonlinear3$lin)
+cn <- ifelse(grepl("\\.", cn), cn, paste0(cn, ".0"))
+colnames(setParam$dgp$trueB$nonlinear3$lin) <- cn
+
+cn <- colnames(setParam$dgp$trueB$nonlinear3$nonlinear)
+cn <- ifelse(grepl("\\.", cn), cn, paste0(cn, ".0"))
+colnames(setParam$dgp$trueB$nonlinear3$nonlinear) <- cn
+
 # # lin vs. piecewise linear
 setParam$dgp$trueB$pwlinear$lin <- reshape2::dcast(bruteForceB_pwl, R2 ~ lin, value.var = "betaLin")
 setParam$dgp$trueB$pwlinear$nonlinear <- reshape2::dcast(bruteForceB_pwl, R2 ~ inter, value.var = "betaInter")
@@ -131,6 +147,14 @@ row.names(setParam$dgp$trueB$pwlinear$lin) <- setParam$dgp$trueB$pwlinear$lin[["
 setParam$dgp$trueB$pwlinear$lin[["R2"]]    <- NULL
 row.names(setParam$dgp$trueB$pwlinear$nonlinear) <- setParam$dgp$trueB$pwlinear$nonlinear[["R2"]]
 setParam$dgp$trueB$pwlinear$nonlinear[["R2"]]    <- NULL
+
+cn <- colnames(setParam$dgp$trueB$pwlinear$lin)
+cn <- ifelse(grepl("\\.", cn), cn, paste0(cn, ".0"))
+colnames(setParam$dgp$trueB$pwlinear$lin) <- cn
+
+cn <- colnames(setParam$dgp$trueB$pwlinear$nonlinear)
+cn <- ifelse(grepl("\\.", cn), cn, paste0(cn, ".0"))
+colnames(setParam$dgp$trueB$pwlinear$nonlinear) <- cn
 
 rm(bruteForceB_inter, bruteForceB_nl3, bruteForceB_pwl) # rm temporary matrices 
 
