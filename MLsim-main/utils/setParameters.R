@@ -23,10 +23,10 @@ setParam$dgp$p <- 4               # number of latent variables
 setParam$dgp$interDepth <- c(2) # depth of interactions (so far: only two-way interaction)
 setParam$dgp$poly <- c(0) # degree of polynomials (so far: no polynomials)
 
-# setParam$dgp$pNL <- 2             # number of original variables for nonlinear effects   
-setParam$dgp$pNL3 <- 3            # number of original variables for nonlinear effects        
-setParam$dgp$pPWL <- 3            # number of original variables for piecewise-linear effects
-setParam$dgp$pTrash <- c(10, 50)  # number of noise variables
+# setParam$dgp$pNL <- 2            # number of original variables for nonlinear effects   
+setParam$dgp$pNL3 <- 3             # number of original variables for nonlinear effects        
+setParam$dgp$pPWL <- 3             # number of original variables for piecewise-linear effects
+setParam$dgp$pTrash <- 25          # number of noise variables
 
 # predictors and their polynomials + all interactions of depth
 P <- (setParam$dgp$p + setParam$dgp$pTrash) # all predictors
