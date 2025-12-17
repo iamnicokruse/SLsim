@@ -163,7 +163,7 @@ comboGrid <- expand.grid(setParam$dgp$Rsquared,
                                formatC(setParam$dgp$percentInter, format = "f", digits = 1), sep = "_"))
 setParam$dgp$condLabels <- sapply(seq_len(length(setParam$dgp$Rsquared) * length(setParam$dgp$percentLinear)), 
                                   function(x) paste0("R2", comboGrid$Var1[x], "lin_inter", comboGrid$Var2[x]))
-rm(comboGrid)
+rm(comboGrid,cn)
 
 ##### predictor correlations #####
 # do not randomly sample correlation matrix in each sample!
