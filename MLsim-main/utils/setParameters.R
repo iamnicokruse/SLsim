@@ -290,3 +290,13 @@ setParam$dgp$sigmaE <- 1
 # measurement error in predictors 
 setParam$dgp$reliability <- c(0.7, 1)
 
+##### model fit #####
+
+# used algorithms
+setParam$modfit$baselearner <- c("glmnet", "rpart", "ranger", "gbm")
+setParam$modfit$superlearner <- c("nnls", "glm", "glmnet", "ranger")
+
+
+
+
+

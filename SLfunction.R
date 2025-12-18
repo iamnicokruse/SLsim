@@ -36,7 +36,7 @@ runSL <- function(file, testsample, iter = 1, baselearner, metalearner) {
     
     for(i in 1:iter) {
       
-      test_data  <- testsample # infromation taken from function
+      test_data  <- testsample # information taken from function
       train_data <- data       # taken from processing of current file/sample
       
       preds <- names(data[!(names(data) %in% c("krit"))]) # predictor character string
