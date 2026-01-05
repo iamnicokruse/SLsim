@@ -4,7 +4,6 @@
 # X_int can be used as predictor matrix
 # each of yMat 9 columns is used once as criterion for runSL
 
-dataList <- out[[1]]
 
 
 runSL <- function(dataList){
@@ -141,14 +140,10 @@ runSL <- function(dataList){
       train_perf$condition <- paste0(yVec[y], "_sl_algorithm_", metalearner)  # add sample name to train-output
       test_perf$condition  <- paste0(yVec[y], "_sl_algorithm_", metalearner)  # add sample name to test-output
       
-      ensembleName <- paste0("sl_algorithm_", metalearner)
-      ensembleList <- list(train_perf = train_perf, test_perf = test_perf)
-      
-      nestedList[[s]] <- setNames(list(ensembleList, hyperparameters, weights_metamodel),
-                                   c(ensembleName, "hyperparameters", "weights"))  
+      nestedList[[s]] <- setNames(list(train_perf, test_perf, hyperparameters, weights_metamodel),
+                                   c("train_perf", "test_perf", "hyperparameters", "weights"))  
     }
     resultList[[y]] <- nestedList 
-    # structure: resultList[[y / sample]][[s / sl algorithm]]$ weights / train_perf or test_perf / hyperparameters
   }
   return(resultList)
 }
