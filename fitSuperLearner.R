@@ -5,6 +5,8 @@
 # each of yMat 9 columns is used once as criterion for runSL
 
 dataList <- out[[1]]
+resultList <- list()
+nestedList <- list()
 
 runSL <- function(dataList){
   Xint = as.data.frame(dataList$X_int[, !grepl(":", colnames(dataList$X_int))])
@@ -13,6 +15,9 @@ runSL <- function(dataList){
   for(y in seq_along(yVec)){
     krit <- dataList$yMat[, y]
     data <- data.frame(Xint, krit)
+    
+    train_data <- data
+    test_data <- data
     
     preds <- names(data[!(names(data) %in% c("krit"))]) # predictor character string
     mod <- as.formula(paste("krit ~ ", paste(preds, collapse = "+"))) # additive predictor combination
@@ -33,10 +38,10 @@ runSL <- function(dataList){
                               number = 10,
                               savePredictions = "final", # saves predictions for optimal tuning parameters
                               allowParallel = F) # must be set to FALSE, as we parallelize the outer resampling
-    slList <- list()
+    
     for(s in seq_along(setParam$modfit$superlearner)) {
       metalearner = setParam$modfit$superlearner[s]
-    
+      
       if(metalearner == "ranger"){
       ensemble <- caretStack(models,
                              method = metalearner,
@@ -103,7 +108,6 @@ runSL <- function(dataList){
           rename(methods = method)                          
       }
       
-      train_perf = cbind(train_perf, iter = rep(i, length(baselearner)+1))
       
       # evaluate final model using held out "test_data" and comparing performances
       final_model <- ensemble
@@ -128,19 +132,18 @@ runSL <- function(dataList){
         rename(TestRsquared = Rsquared) %>%
         rename(TestMAE = MAE)
       
-      models <- c("glmnet", "rpart", "gbm", "ranger", "ensemble")
-      test_perf = cbind(test_perf, models, iter = rep(i, length(baselearner)+1))
+
+      train_perf$condition <- paste0(yVec[y], "_sl_algorithm_", metalearner)  # add sample name to train-output
+      test_perf$condition  <- paste0(yVec[y], "_sl_algorithm_", metalearner)  # add sample name to test-output
       
-      train_perf$dataset <- basename(file)  # add sample name to train-output
-      test_perf$dataset  <- basename(file)  # add sample name to test-output
-      
-      weightsName <- paste0("weights_", yVec[y])
-      hyperparametersName <- paste0("hyperparameters_", yVec[y])
       ensembleName <- paste0("sl_algorithm_", metalearner)
-      
       ensembleList <- list(train_perf = train_perf, test_perf = test_perf)
+      
       nestedList[[s]] <- setNames(list(ensembleList, hyperparameters, weights_metamodel),
-                                   c(ensembleName, hyperparametersName, weightsName))  
+                                   c(ensembleName, "hyperparameters", "weights"))  
+    }
+    resultList[[y]] <- nestedList 
+    # structure: resultList[[y / sample]][[s / sl algorithm]]$ weights / train_perf or test_perf / hyperparameters
   }
 }
-}
+
