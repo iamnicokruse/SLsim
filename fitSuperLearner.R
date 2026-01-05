@@ -5,13 +5,15 @@
 # each of yMat 9 columns is used once as criterion for runSL
 
 dataList <- out[[1]]
-resultList <- list()
-nestedList <- list()
+
 
 runSL <- function(dataList){
   Xint = as.data.frame(dataList$X_int[, !grepl(":", colnames(dataList$X_int))])
   yVec = colnames(dataList$yMat)
 
+  resultList <- vector("list", length(yVec))
+  names(resultList) <- yVec
+  
   for(y in seq_along(yVec)){
     krit <- dataList$yMat[, y]
     data <- data.frame(Xint, krit)
@@ -38,6 +40,9 @@ runSL <- function(dataList){
                               number = 10,
                               savePredictions = "final", # saves predictions for optimal tuning parameters
                               allowParallel = F) # must be set to FALSE, as we parallelize the outer resampling
+    
+    nestedList <- vector("list", length(setParam$modfit$superlearner))
+    names(nestedList) <- paste0("sl_algorithm_", setParam$modfit$superlearner)
     
     for(s in seq_along(setParam$modfit$superlearner)) {
       metalearner = setParam$modfit$superlearner[s]
@@ -145,5 +150,6 @@ runSL <- function(dataList){
     resultList[[y]] <- nestedList 
     # structure: resultList[[y / sample]][[s / sl algorithm]]$ weights / train_perf or test_perf / hyperparameters
   }
+  return(resultList)
 }
 
