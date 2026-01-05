@@ -137,8 +137,9 @@ runSL <- function(dataList){
         rename(TestMAE = MAE)
       
 
-      train_perf$condition <- paste0(yVec[y], "_sl_algorithm_", metalearner)  # add sample name to train-output
-      test_perf$condition  <- paste0(yVec[y], "_sl_algorithm_", metalearner)  # add sample name to test-output
+      # train_perf$condition <- paste0(yVec[y], "_sl_algorithm_", metalearner)  # add sample name to train-output
+      # test_perf$condition  <- paste0(yVec[y], "_sl_algorithm_", metalearner)  # add sample name to test-output
+      # not necessarily needed as condition labels in list structure
       
       nestedList[[s]] <- setNames(list(train_perf, test_perf, hyperparameters, weights_metamodel),
                                    c("train_perf", "test_perf", "hyperparameters", "weights"))  
