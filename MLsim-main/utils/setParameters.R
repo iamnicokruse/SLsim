@@ -294,7 +294,8 @@ setParam$dgp$reliability <- c(0.7, 1)
 
 # used algorithms
 setParam$modfit$baselearner <- c("glmnet", "rpart", "ranger", "gbm")
-setParam$modfit$superlearner <- c("nnls", "glm", "glmnet", "ranger")
+setParam$modfit$superlearner <- c(#"nnls",
+  "glm","glmnet","ranger")
 
 
 
