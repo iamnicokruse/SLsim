@@ -17,7 +17,7 @@ runSL <- function(dataList){
     data <- data.frame(Xint, krit)
     
     train_data <- data
-    test_data <- data
+    test_data <- data # !!! only to test script later only one test data set !!!
     
     preds <- names(data[!(names(data) %in% c("krit"))]) # predictor character string
     mod <- as.formula(paste("krit ~ ", paste(preds, collapse = "+"))) # additive predictor combination
