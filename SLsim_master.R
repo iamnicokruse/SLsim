@@ -28,7 +28,7 @@ source("MLsim-main/utils/simTools.R")
 
 # analysis functions
 source("SLtools.R")
-source("SLfunction.R")
+source("fitSuperLearner.R")
 
 # generate folder for log files (if needed!)
 # logFolder = "log"
@@ -101,7 +101,7 @@ createData <- function(data, N, reliability, sampleSeed){
 # simulate and return data
 pTrash <- 25
 out <- do.call(mapply, c(FUN = createData, gridFull))
-
+out_res <- lapply(out, fitSL)
 # fit super learner to data and save results
 
-
+View(out_res)
