@@ -6,7 +6,7 @@
 
 
 
-runSL <- function(dataList){
+fitSL <- function(dataList){
   Xint = as.data.frame(dataList$X_int[, !grepl(":", colnames(dataList$X_int))])
   yVec = colnames(dataList$yMat)
 
