@@ -100,8 +100,10 @@ createData <- function(data, N, reliability, sampleSeed){
 
 # simulate and return data
 pTrash <- 25
+
+start <- Sys.time()
 out <- do.call(mapply, c(FUN = createData, gridFull))
 out_res <- lapply(out, fitSL)
-# fit super learner to data and save results
-
 View(out_res)
+end <- Sys.time()
+difftime(end, start)
