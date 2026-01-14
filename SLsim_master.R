@@ -86,7 +86,7 @@ createData <- function(data, N, reliability, sampleSeed){
   }
   
   # Initiate cluster
-  plan(multisession, workers = nCoresSampling) # if not run with Rstudio but R, multicore can be used (FORKING)
+  # plan(multisession, workers = nCoresSampling) # if not run with Rstudio but R, multicore can be used (FORKING)
   
   
   if (data == "inter"){
