@@ -67,20 +67,22 @@ fitSL <- function(dataList){
       hyperparameters <- list(glmnet = models$glmnet$bestTune,
                               rpart = models$rpart$bestTune,
                               gbm = models$gbm$bestTune,
-                              rf = models$rf$bestTune,
+                              rf = models$ranger$bestTune,
                               ensemble = ensemble$ens_model$bestTune)
       
       # saving weight of metalearner
+      weights_metamodel <- c("intercept" = NA_real_, "glmnet" = NA_real_, rpart = NA_real_, ranger = NA_real_, gbm = NA_real_)
       if(metalearner == "glm") {
-        weights_metamodel <- ensemble$ens_model$finalModel$coefficients
+        weights_metamodel <- as.matrix(ensemble$ens_model$finalModel$coefficients)
       } else if(metalearner == "glmnet") {
         weights_metamodel <- as.matrix(coef(ensemble$ens_model$finalModel,            
                                             s = ensemble$ens_model$bestTune$lambda))
       } else if(metalearner == "ranger") {
-        weights_metamodel <- ensemble$ens_model$finalModel$variable.importance
+        weights_metamodel[2:5] <- (ensemble$ens_model$finalModel$variable.importance)
+        weights_metamodel <- as.matrix(weights_metamodel)
       } else{paste0("No specification of weight extraction for this metalearner")}   
       
-      
+      # save performance in training
       if(metalearner == "glm") {
         train_perf = rbind(glmnet_train = getTrainPerf(models$glmnet),
                            rpart_train = getTrainPerf(models$rpart),
