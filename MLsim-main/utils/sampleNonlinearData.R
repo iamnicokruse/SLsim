@@ -26,7 +26,7 @@ sampleNonlinearData <- function() {
   
   # sample data in parallel; 
   # generate samples in parallel as samples are drawn as random & independent
-  data <- future_lapply(seq_len(setParam$dgp$nSamples), function(iSample) {
+  data <- lapply(seq_len(setParam$dgp$nSamples), function(iSample) {
     
     P <- setParam$dgp$p + setParam$dgp$pNL3 + pTrash # total number of variables  
     
@@ -154,6 +154,5 @@ sampleNonlinearData <- function() {
     
     # testFileName <- paste0("simDataN", N, "_pTrash", pTrash, "_rel", reliability, "_", data, ".rda")
     # save(dataList, file = paste0(dgpFolder, "/", testFileName))
-  }, future.seed = TRUE,
-  future.packages = future_packages)
+  })
 }

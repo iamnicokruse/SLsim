@@ -11,7 +11,7 @@ sampleInteractionData <- function() {
   
   # sample data in parallel; 
   # generate samples in parallel as samples are drawn as random & independent
-  data <- future_lapply(seq_len(setParam$dgp$nSamples), function(iSample) {
+  data <- lapply(seq_len(setParam$dgp$nSamples), function(iSample) {
     
     P <- setParam$dgp$p + pTrash # total number of variables
     # generate matrix of (almost) uncorrelated predictors
@@ -94,6 +94,5 @@ sampleInteractionData <- function() {
                      R2 = R2, # without measurement error
                      R2_wME = R2_wME) # with measurement error
     
-  }, future.seed = TRUE,
-  future.packages = future_packages)
+  })
 }
