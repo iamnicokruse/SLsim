@@ -15,11 +15,11 @@ fitSL <- function(dataList, testList){
   for(y in seq_along(yVec)){
     
   # define train data
-    krit <- dataList$yMat[, 1]
+    krit <- dataList$yMat[, y]
     train_data <- data.frame(Xint, krit)
     
   # define test data
-    testkrit = testList$yMat[, 1]
+    testkrit = testList$yMat[, y]
     test_data <- data.frame(testXint,
                             "krit" = testkrit)
     
