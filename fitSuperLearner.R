@@ -1,26 +1,29 @@
 # Function to train Super Learner to data
 
-# it needs to adapt list of sample[...]Data (dataList) to runSl function 
+# it needs to adapt list of sample[...]Data (dataList) to fitSL function 
 # X_int can be used as predictor matrix
-# each of yMat 9 columns is used once as criterion for runSL
+# each of yMat 9 columns is used once as criterion for fitSL
 
-
-
-fitSL <- function(dataList){
+fitSL <- function(dataList, testList){
   Xint = as.data.frame(dataList$X_int[, !grepl(":", colnames(dataList$X_int))])
   yVec = colnames(dataList$yMat)
+  testXint = as.data.frame(testList$X_int[, !grepl(":", colnames(testList$X_int))])
 
   resultList <- vector("list", length(yVec))
   names(resultList) <- yVec
   
   for(y in seq_along(yVec)){
-    krit <- dataList$yMat[, y]
-    data <- data.frame(Xint, krit)
     
-    train_data <- data
-    test_data <- data # !!! only to test script later only one test data set !!!
+  # define train data
+    krit <- dataList$yMat[, 1]
+    train_data <- data.frame(Xint, krit)
     
-    preds <- names(data[!(names(data) %in% c("krit"))]) # predictor character string
+  # define test data
+    testkrit = testList$yMat[, 1]
+    test_data <- data.frame(testXint,
+                            "krit" = testkrit)
+    
+    preds <- names(train_data[!(names(train_data) %in% c("krit"))]) # predictor character string
     mod <- as.formula(paste("krit ~ ", paste(preds, collapse = "+"))) # additive predictor combination
     
     trainCtrl <- trainControl(method = "cv",       # specification of tuning in inner cv for baselearner
