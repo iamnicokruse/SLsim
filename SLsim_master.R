@@ -100,10 +100,17 @@ createData <- function(data, N, reliability, sampleSeed){
 
 # simulate and return data
 pTrash <- 25
+testList = get(load("testList.rda"))
 
-start <- Sys.time()
-out <- do.call(mapply, c(FUN = createData, gridFull))
-out_res <- lapply(out, fitSL)
-View(out_res)
-end <- Sys.time()
-difftime(end, start)
+# start <- Sys.time()
+dataList <- do.call(mapply, c(FUN = createData, gridFull))
+res <- mapply(
+  FUN = fitSL,
+  dataList = dataList,
+  testList = testList,
+  SIMPLIFY = FALSE
+)
+
+# View(res)
+# end <- Sys.time()
+# difftime(end, start)
