@@ -3,9 +3,9 @@ setParam <- list()
 ################################################################################
 # data generating process
 ################################################################################
-setParam$dgp$nTrain <- 1000
-setParam$dgp$nTest <- 1
-setParam$dgp$nSamples <- setParam$dgp$nTrain + setParam$dgp$nTest
+# setParam$dgp$nTrain <- 1000
+# setParam$dgp$nTest <- 1
+setParam$dgp$nSamples <- 100 # setParam$dgp$nTrain + setParam$dgp$nTest
 
 # this is only a technical argument which determines if data is saved in ...
 #   ... either one big rda file which heavily stresses RAM in parallelisation
