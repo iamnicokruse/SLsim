@@ -15,7 +15,7 @@ sampleInteractionData <- function() {
     
     P <- setParam$dgp$p + pTrash # total number of variables
     # generate matrix of (almost) uncorrelated predictors
-    if (iSample > setParam$dgp$nTrain) {
+    if (iSample > setParam$dgp$nSamples) {
       # test sample with fixed sample size across all simulated conditions (independent of N)
       N <- setParam$dgp$testN
     }
