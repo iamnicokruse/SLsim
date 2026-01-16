@@ -99,8 +99,7 @@ runSLsim <- function(i, data) {
   # nSamples is number of simulation runs
   # data can be "inter", "nonlinear3" and "pwlinear" (as each Cluster is
   # supposed to run only one of these conditions)
-  
-  pTrash <- 25
+
   # load pre-saved test samples
   testList = get(load("testList.rda"))
     
@@ -135,12 +134,11 @@ runSLsim <- function(i, data) {
     save(res, file = res_name)
 }
 
-# what is still needed?
-# the resulting lists need to be saves as .rda-files named by data type and sample number
 # Initiate cluster
 plan(multisession, workers = nCoresSampling) # if not run with Rstudio but R, multicore can be used (FORKING)
 
-nSamples <- setParam$dgp$nSamples
+pTrash <- 25
+nSamples <- 2
 future_lapply(X = 1:nSamples, FUN = runSLsim, data = "inter",
               future.packages = future_packages, 
               future.seed = TRUE)
