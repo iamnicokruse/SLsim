@@ -13,6 +13,7 @@ library(future)
 library(future.apply)
 library(mvtnorm)
 library(truncnorm)
+library(glmnetUtils)
 
 # package string for future_lapply
 future_packages = c("Matrix","mvtnorm", "truncnorm")
@@ -72,7 +73,7 @@ gridFull <- rbind(gridFull,
 # check uniqueness of set seeds
 # length(unique(gridFull$sampleSeed))
 
-# sample data im parallel
+# sample data
 createData <- function(data, N, reliability, sampleSeed){
   
   if (data == "inter"){
@@ -137,7 +138,7 @@ runSLsim <- function(i, data) {
 # Initiate cluster
 plan(multisession, workers = nCoresSampling) # if not run with Rstudio but R, multicore can be used (FORKING)
 
-pTrash <- 25
+pTrash <- setParam$dgp$pTrash
 nSamples <- 2
 future_lapply(X = 1:nSamples, FUN = runSLsim, data = "inter",
               future.packages = future_packages, 
