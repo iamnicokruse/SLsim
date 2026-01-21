@@ -24,20 +24,29 @@ fitSL <- function(dataList, testList){
                             "krit" = testkrit)
     
     preds <- names(train_data[!(names(train_data) %in% c("krit"))]) # predictor character string
-    mod_noInt <- as.formula(paste("krit ~ ", paste(preds, collapse = "+"))) # additive predictor combination
-    mod_Int <- as.formula(paste("krit ~ ", paste(preds, collapse = "*"))) # multiplicative predictor combination (for glmnet)
     
     trainCtrl <- trainControl(method = "cv",       # specification of tuning in inner cv for baselearner
                               number = 10,
                               savePredictions = "final", # saves predictions for optimal tuning parameters
                               allowParallel = F) # must be set to FALSE, as we parallelize the outer resampling
     
-    models <- caretList(mod, # needs to be adjusted next
-                        data = train_data,
+    models <- caretList(y = train_data[, "krit"],
+                        x = train_data[, preds],
                         trControl = trainCtrl,
                         metric = "MAE",
-                        methodList = setParam$modfit$baselearner
-    )
+                        methodList = setParam$modfit$baselearner[setParam$modfit$baselearner != "glmnet"]
+                        )
+    
+    mod_wInt <- as.formula(paste0("krit ~ (", paste(preds, collapse = "+"), ")^2"))
+    base_glmnet <- train(mod_wInt,
+                         data = train_data,
+                         method = "glmnet",
+                         metric = "MAE",
+                         trControl = trainCtrl,
+                         tuneLength = 25
+                         )
+    
+    models[["glmnet"]]<- base_glmnet
     
     ensemCtrl <- trainControl(method = "cv",       # specification of tuning in inner cv for metalearner
                               number = 10,
@@ -137,10 +146,10 @@ fitSL <- function(dataList, testList){
                          pred = predict(final_model, test_data, na.action = na.pass))
       
       # adds predicitons based on baselearners to test_data
-      test_data$glmnet_pred <- predict(models$glmnet, test_data)
-      test_data$rpart_pred  <- predict(models$rpart, test_data)
-      test_data$gbm_pred  <- predict(models$gbm, test_data)
-      test_data$rf_pred  <- predict(models$ranger, test_data)
+      test_data$glmnet_pred <- predict(models$glmnet, test_data[, preds])
+      test_data$rpart_pred  <- predict(models$rpart, test_data[, preds])
+      test_data$gbm_pred  <- predict(models$gbm, test_data[, preds])
+      test_data$rf_pred  <- predict(models$ranger, test_data[, preds])
       
       
       test_perf = data.frame(rbind(glmnet_test = postResample(pred =  test_data$glmnet_pred, obs = test_data$krit),
