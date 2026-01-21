@@ -91,10 +91,11 @@ fitSL <- function(dataList, testList){
         weights_metamodel <- as.matrix(coef(ensemble$ens_model$finalModel,            
                                             s = ensemble$ens_model$bestTune$lambda))
       } else if(metalearner == "ranger") {
-        weights_metamodel[2:5] <- (ensemble$ens_model$finalModel$variable.importance)
+        weights_metamodel[2:5] <- ensemble$ens_model$finalModel$variable.importance
         weights_metamodel <- as.matrix(weights_metamodel)
       } else if(metalearner == "nnls") {
-        weights_metamodel[2:5] <- as.matrix(coef(ensemble$ens_model$finalModel))
+        weights_metamodel[2:5] <- coef(ensemble$ens_model$finalModel)
+        weights_metamodel <- as.matrix(weights_metamodel)
       } else{paste0("No specification of weight extraction for this metalearner")}   
       
       # save performance in training
