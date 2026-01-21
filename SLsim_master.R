@@ -131,7 +131,7 @@ runSLsim <- function(i, data) {
     
     folder <- paste0("results/", data)
     if (!dir.exists(folder)) dir.create(folder, recursive = TRUE)
-    res_name <- paste0(folder, "/res_", data, "sample", i, ".rda")
+    res_name <- paste0(folder, "/res_", data, "_sample", i, ".rda")
     save(res, file = res_name)
 }
 
@@ -140,7 +140,7 @@ plan(multisession, workers = nCoresSampling) # if not run with Rstudio but R, mu
 
 pTrash <- setParam$dgp$pTrash
 nSamples <- 2
-future_lapply(X = 1:nSamples, FUN = runSLsim, data = "inter",
+future_lapply(X = 1:nSamples, FUN = runSLsim, data = "pwlinear",
               future.packages = future_packages, 
               future.seed = TRUE)
 
