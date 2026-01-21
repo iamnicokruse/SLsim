@@ -24,14 +24,15 @@ fitSL <- function(dataList, testList){
                             "krit" = testkrit)
     
     preds <- names(train_data[!(names(train_data) %in% c("krit"))]) # predictor character string
-    mod <- as.formula(paste("krit ~ ", paste(preds, collapse = "+"))) # additive predictor combination
+    mod_noInt <- as.formula(paste("krit ~ ", paste(preds, collapse = "+"))) # additive predictor combination
+    mod_Int <- as.formula(paste("krit ~ ", paste(preds, collapse = "*"))) # multiplicative predictor combination (for glmnet)
     
     trainCtrl <- trainControl(method = "cv",       # specification of tuning in inner cv for baselearner
                               number = 10,
                               savePredictions = "final", # saves predictions for optimal tuning parameters
                               allowParallel = F) # must be set to FALSE, as we parallelize the outer resampling
     
-    models <- caretList(mod,
+    models <- caretList(mod, # needs to be adjusted next
                         data = train_data,
                         trControl = trainCtrl,
                         metric = "MAE",
