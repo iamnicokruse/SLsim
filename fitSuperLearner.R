@@ -83,6 +83,8 @@ fitSL <- function(dataList, testList){
       } else if(metalearner == "ranger") {
         weights_metamodel[2:5] <- (ensemble$ens_model$finalModel$variable.importance)
         weights_metamodel <- as.matrix(weights_metamodel)
+      } else if(metalearner == "nnls") {
+        weights_metamodel[2:5] <- as.matrix(coef(ensemble$ens_model$finalModel))
       } else{paste0("No specification of weight extraction for this metalearner")}   
       
       # save performance in training
@@ -115,6 +117,14 @@ fitSL <- function(dataList, testList){
           rbind(ensemble_train = getTrainPerf(ensemble$ens_model)) %>%    
           mutate(method = recode(method, ranger = "ensemble")) %>%        
           rename(methods = method)                          
+      } else if(metalearner == "nnls"){
+        train_perf = rbind(glmnet_train = getTrainPerf(models$glmnet),
+                           rpart_train = getTrainPerf(models$rpart),
+                           gbm_train = getTrainPerf(models$gbm),
+                           rf_train = getTrainPerf(models$ranger),
+                           ensemble_train = getTrainPerf(ensemble$ens_model))%>%    
+          mutate(method = recode(method, nnls = "ensemble")) %>%        
+          rename(methods = method)                        
       }
       
       
