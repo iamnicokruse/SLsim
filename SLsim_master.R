@@ -76,6 +76,8 @@ gridFull <- rbind(gridFull,
 # sample data
 createData <- function(data, N, reliability, sampleSeed){
   
+  set.seed(sampleSeed)
+  
   if (data == "inter"){
     environment(sampleInteractionData) <- environment()  
   } else if (data == "nonlinear3") {
@@ -96,22 +98,25 @@ createData <- function(data, N, reliability, sampleSeed){
 }
 
 # meta-function to combine simulation and model fit
-runSLsim <- function(i, data) {
+runSLsim <- function(i, data, seed) {
   # nSamples is number of simulation runs
   # data can be "inter", "nonlinear3" and "pwlinear" (as each Cluster is
   # supposed to run only one of these conditions)
 
+  set.seed(seed)
+  
   # load pre-saved test samples
   testList = get(load("testList.rda"))
     
-    if (data == "inter"){
-      testList <- testList[c(1:6)]
+  # filter right test samples
+    if (data == "inter"){ 
+      testList <- testList[c(1:6)] 
     } else if (data == "nonlinear3") {
-      testList <- testList[c(7:12)]
-    } else if (data == "pwlinear") {
-      testList <- testList[c(13:18)]
+      testList <- testList[c(7:12)] 
+    } else if (data == "pwlinear") { 
+      testList <- testList[c(13:18)] 
     }
-    
+  
     # simulate data as train samples
     if (data == "inter"){
       dataList <- do.call(mapply, c(FUN = createData, gridFull[gridFull$data == "inter", ]))
@@ -140,11 +145,23 @@ plan(multisession, workers = nCoresSampling) # if not run with Rstudio but R, mu
 
 pTrash <- setParam$dgp$pTrash
 nSamples <- 2
-future_lapply(X = 1:nSamples, FUN = runSLsim, data = "pwlinear",
+dataType <- "pwlinear"
+
+
+# Create seed strings based on sampleSeeds for reproducibility
+gridFull$run_seeds <- lapply(gridFull$sampleSeed, function(s) {
+  set.seed(s, kind = "L'Ecuyer-CMRG")
+  sample.int(.Machine$integer.max, nSamples)
+})
+
+run_seeds <- gridFull$run_seeds[[ gridFull$data == dataType ]]
+
+# Run simulation in parallel
+future_lapply(X = 1:nSamples,
+              FUN = function(j) {
+                runSLsim(i = j,
+                         data = dataType,
+                         seed = run_seeds[j])
+              },
               future.packages = future_packages, 
               future.seed = TRUE)
-
-
-
-
-
