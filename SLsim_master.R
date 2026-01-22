@@ -139,7 +139,7 @@ runSLsim <- function(i, data, N, reliability) {
 plan(multisession, workers = nCoresSampling) # if not run with Rstudio but R, multicore can be used (FORKING)
 
 pTrash <- setParam$dgp$pTrash
-nSamples <- 100
+nSamples <- 2
 dataType <- "inter"
 
 
