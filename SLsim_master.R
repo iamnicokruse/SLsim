@@ -98,33 +98,28 @@ createData <- function(data, N, reliability, sampleSeed){
 }
 
 # meta-function to combine simulation and model fit
-runSLsim <- function(i, data, seed) {
+runSLsim <- function(i, data, N, reliability) {
   # nSamples is number of simulation runs
   # data can be "inter", "nonlinear3" and "pwlinear" (as each Cluster is
   # supposed to run only one of these conditions)
 
+  row_idx <- which(gridFull$data == data & gridFull$N == N & gridFull$reliability == reliability)
+  
+  # extract the run seeds for that row
+  run_seeds <- gridFull$run_seeds[[row_idx]]
+  
+  # pick the seed for this simulation run
+  seed <- run_seeds[i]
+  
   set.seed(seed)
   
   # load pre-saved test samples
   testList = get(load("testList.rda"))
-    
-  # filter right test samples
-    if (data == "inter"){ 
-      testList <- testList[c(1:6)] 
-    } else if (data == "nonlinear3") {
-      testList <- testList[c(7:12)] 
-    } else if (data == "pwlinear") { 
-      testList <- testList[c(13:18)] 
-    }
+  testList = testList[c(1,4,7,10,13,16)] # only used for trial runs with N = 100
+  testList = testList[row_idx]
   
-    # simulate data as train samples
-    if (data == "inter"){
-      dataList <- do.call(mapply, c(FUN = createData, gridFull[gridFull$data == "inter", ]))
-    } else if (data == "nonlinear3") {
-      dataList <- do.call(mapply, c(FUN = createData, gridFull[gridFull$data == "nonlinear3", ]))
-    } else if (data == "pwlinear") {
-      dataList <- do.call(mapply, c(FUN = createData, gridFull[gridFull$data == "pwlinear", ]))
-    }
+  # simulate data as train samples
+  dataList <- do.call(mapply, c(FUN = createData, gridFull[row_idx, !colnames(gridFull) %in% "run_seeds"]))
     
     # use both to train and validate super learners
     res <- mapply(
@@ -136,7 +131,7 @@ runSLsim <- function(i, data, seed) {
     
     folder <- paste0("results/", data)
     if (!dir.exists(folder)) dir.create(folder, recursive = TRUE)
-    res_name <- paste0(folder, "/res_", data, "_sample", i, ".rda")
+    res_name <- paste0(folder, "/res_", data, "_N", N, "_rel", reliability, "_sample", i, ".rda")
     save(res, file = res_name)
 }
 
@@ -154,14 +149,23 @@ gridFull$run_seeds <- lapply(gridFull$sampleSeed, function(s) {
   sample.int(.Machine$integer.max, nSamples)
 })
 
-run_seeds <- gridFull$run_seeds[[ gridFull$data == dataType ]]
+run_seeds <- gridFull$run_seeds[gridFull$data == dataType]
+
+# create subset of gridFull to run simulation with for()-Loop for only one dgp
+grid_subset <- gridFull[gridFull$data == dataType, ]
 
 # Run simulation in parallel
-future_lapply(X = 1:nSamples,
-              FUN = function(j) {
-                runSLsim(i = j,
-                         data = dataType,
-                         seed = run_seeds[j])
-              },
-              future.packages = future_packages, 
-              future.seed = TRUE)
+for (row in seq_len(nrow(grid_subset))) {
+  N_val <- grid_subset$N[row]
+  rel_val <- grid_subset$reliability[row]
+  
+  future_lapply(
+    X = 1:nSamples,
+    FUN = function(j) {
+      runSLsim(i = j, data = dataType, N = N_val, reliability = rel_val)
+    },
+    future.packages = future_packages,
+    future.seed = TRUE
+  )
+}
+
