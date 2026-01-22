@@ -30,16 +30,19 @@ fitSL <- function(dataList, testList){
                               savePredictions = "final", # saves predictions for optimal tuning parameters
                               allowParallel = F) # must be set to FALSE, as we parallelize the outer resampling
     
-    models <- caretList(y = train_data[, "krit"],
-                        x = train_data[, preds],
+    models <- caretList(y = train_data[, "krit"], # same as dataList$yMat[, y]
+                        x = train_data[, preds],  # same as Xint
                         trControl = trainCtrl,
                         metric = "MAE",
                         methodList = setParam$modfit$baselearner[setParam$modfit$baselearner != "glmnet"]
                         )
     
-    mod_wInt <- as.formula(paste0("krit ~ (", paste(preds, collapse = "+"), ")^2"))
-    base_glmnet <- train(mod_wInt,
-                         data = train_data,
+    # make predictor data frame with two way interactions)
+    XallInt <- data.frame(model.matrix(as.formula(paste0("krit ~ (", paste(preds, collapse = "+"), ")^2")), data = Xint))
+    XallInt$X.Intercept. <- NULL
+    
+    base_glmnet <- train(y = train_data[, "krit"],
+                         x = XallInt,
                          method = "glmnet",
                          metric = "MAE",
                          trControl = trainCtrl,
@@ -142,12 +145,16 @@ fitSL <- function(dataList, testList){
       # evaluate final model using held out "test_data" and comparing performances
       final_model <- ensemble
       
+      # test_data with interactions for testing of glmnet model from training
+      testXallInt <- data.frame(model.matrix(as.formula(paste0("krit ~ (", paste(preds, collapse = "+"), ")^2")), data = testXint))
+      testXallInt$X.Intercept. <- NULL
+      
       # next step adds predictions based on metalearner to test_data
       test_data <- cbind(test_data,
-                         pred = predict(final_model, test_data, na.action = na.pass))
+                         pred = predict(final_model, testXallInt, na.action = na.pass))
       
       # adds predicitons based on baselearners to test_data
-      test_data$glmnet_pred <- predict(models$glmnet, test_data[, preds])
+      test_data$glmnet_pred <- predict(models$glmnet, testXallInt)
       test_data$rpart_pred  <- predict(models$rpart, test_data[, preds])
       test_data$gbm_pred  <- predict(models$gbm, test_data[, preds])
       test_data$rf_pred  <- predict(models$ranger, test_data[, preds])
