@@ -13,35 +13,26 @@ fitSL <- function(dataList, testList){
   names(resultList) <- yVec
   
   for(y in seq_along(yVec)){
-    
-  # define train data
-    krit <- dataList$yMat[, y]
-    train_data <- data.frame(Xint, krit)
-    
-  # define test data
-    testkrit = testList$yMat[, y]
-    test_data <- data.frame(testXint,
-                            "krit" = testkrit)
-    
-    preds <- names(train_data[!(names(train_data) %in% c("krit"))]) # predictor character string
-    
+
     trainCtrl <- trainControl(method = "cv",       # specification of tuning in inner cv for baselearner
                               number = 10,
                               savePredictions = "final", # saves predictions for optimal tuning parameters
                               allowParallel = F) # must be set to FALSE, as we parallelize the outer resampling
     
-    models <- caretList(y = train_data[, "krit"], # same as dataList$yMat[, y]
-                        x = train_data[, preds],  # same as Xint
+    
+    models <- caretList(y = dataList$yMat[, y], # same as dataList$yMat[, y]
+                        x = Xint,  # same as Xint
                         trControl = trainCtrl,
                         metric = "MAE",
                         methodList = setParam$modfit$baselearner[setParam$modfit$baselearner != "glmnet"]
                         )
     
     # make predictor data frame with two way interactions)
-    XallInt <- data.frame(model.matrix(as.formula(paste0("krit ~ (", paste(preds, collapse = "+"), ")^2")), data = Xint))
-    XallInt$X.Intercept. <- NULL
+     preds <- colnames(Xint) # predictor character string
+     XallInt <- data.frame(model.matrix(as.formula(paste0("~ (", paste(preds, collapse = "+"), ")^2")), data = Xint))
+     XallInt$X.Intercept. <- NULL
     
-    base_glmnet <- train(y = train_data[, "krit"],
+    base_glmnet <- train(y = dataList$yMat[, y],
                          x = XallInt,
                          method = "glmnet",
                          metric = "MAE",
@@ -87,19 +78,19 @@ fitSL <- function(dataList, testList){
                               ensemble = ensemble$ens_model$bestTune)
       
       # saving weight of metalearner
-      weights_metamodel <- c("intercept" = NA_real_, "glmnet" = NA_real_, rpart = NA_real_, ranger = NA_real_, gbm = NA_real_)
-      if(metalearner == "glm") {
-        weights_metamodel <- as.matrix(ensemble$ens_model$finalModel$coefficients)
-      } else if(metalearner == "glmnet") {
-        weights_metamodel <- as.matrix(coef(ensemble$ens_model$finalModel,            
-                                            s = ensemble$ens_model$bestTune$lambda))
-      } else if(metalearner == "ranger") {
-        weights_metamodel[2:5] <- ensemble$ens_model$finalModel$variable.importance
-        weights_metamodel <- as.matrix(weights_metamodel)
-      } else if(metalearner == "nnls") {
-        weights_metamodel[2:5] <- coef(ensemble$ens_model$finalModel)
-        weights_metamodel <- as.matrix(weights_metamodel)
-      } else{paste0("No specification of weight extraction for this metalearner")}   
+     weights_metamodel <- c("intercept" = NA_real_, "rpart" = NA_real_, "ranger" = NA_real_, "gbm" = NA_real_, "glmnet" = NA_real_)
+        if(metalearner == "glm") {
+          weights_metamodel <- as.matrix(ensemble$ens_model$finalModel$coefficients)
+        } else if(metalearner == "glmnet") {
+          weights_metamodel <- as.matrix(coef(ensemble$ens_model$finalModel,            
+                                              s = ensemble$ens_model$bestTune$lambda))
+        } else if(metalearner == "ranger") {
+          weights_metamodel[2:5] <- ensemble$ens_model$finalModel$variable.importance
+          weights_metamodel <- as.matrix(weights_metamodel)
+        } else if(metalearner == "nnls") {
+          weights_metamodel[2:5] <- coef(ensemble$ens_model$finalModel)
+          weights_metamodel <- as.matrix(weights_metamodel)
+        } else{paste0("No specification of weight extraction for this metalearner")}   
       
       # save performance in training
       if(metalearner == "glm") {
@@ -121,7 +112,7 @@ fitSL <- function(dataList, testList){
           rbind(ensemble_train = getTrainPerf(ensemble$ens_model)) %>%  # as metalearner = "glmnet" gets relabeled  
           mutate(method = recode(method, glmnet = "ensemble")) %>%        
           rename(methods = method) %>%                                  
-          mutate(methods = recode(methods, enetglm = "glmnet"))         # baselearner glmnet gets orignal name back
+          mutate(methods = recode(methods, enetglm = "glmnet"))         # baselearner glmnet gets original name back
       } else if(metalearner == "ranger") {
         train_perf = rbind(glmnet_train = getTrainPerf(models$glmnet),
                            rpart_train = getTrainPerf(models$rpart),
@@ -142,34 +133,33 @@ fitSL <- function(dataList, testList){
       }
       
       
-      # evaluate final model using held out "test_data" and comparing performances
+      # evaluate final model using testList and comparing performances
       final_model <- ensemble
       
-      # test_data with interactions for testing of glmnet model from training
-      testXallInt <- data.frame(model.matrix(as.formula(paste0("krit ~ (", paste(preds, collapse = "+"), ")^2")), data = testXint))
+      # predictors with interactions for testing of trained glmnet-model 
+      testXallInt <- data.frame(model.matrix(as.formula(paste0("testList$yMat[, y] ~ (", paste(preds, collapse = "+"), ")^2")), data = testXint))
       testXallInt$X.Intercept. <- NULL
       
-      # next step adds predictions based on metalearner to test_data
-      test_data <- cbind(test_data,
+      # create metalearner predictions
+      test_predictons <- data.frame(
                          pred = predict(final_model, testXallInt, na.action = na.pass))
       
-      # adds predicitons based on baselearners to test_data
-      test_data$glmnet_pred <- predict(models$glmnet, testXallInt)
-      test_data$rpart_pred  <- predict(models$rpart, test_data[, preds])
-      test_data$gbm_pred  <- predict(models$gbm, test_data[, preds])
-      test_data$rf_pred  <- predict(models$ranger, test_data[, preds])
+      # adds baselearner predicitons
+      test_predictons$glmnet_pred <- predict(models$glmnet, testXallInt)
+      test_predictons$rpart_pred  <- predict(models$rpart, testXint)
+      test_predictons$gbm_pred  <- predict(models$gbm, testXint)
+      test_predictons$rf_pred  <- predict(models$ranger, testXint)
       
       
-      test_perf = data.frame(rbind(glmnet_test = postResample(pred =  test_data$glmnet_pred, obs = test_data$krit),
-                                   rpart_test = postResample(pred = test_data$rpart_pred, obs = test_data$krit),
-                                   gbm_test = postResample(pred = test_data$gbm_pred, obs = test_data$krit),
-                                   rf_test = postResample(pred = test_data$rf_pred, obs = test_data$krit),
-                                   ensemble_test = postResample(pred = test_data$pred, obs = test_data$krit))) %>%
+      test_perf = data.frame(rbind(glmnet_test = postResample(pred =  test_predictons$glmnet_pred, obs = testList$yMat[, y]),
+                                   rpart_test = postResample(pred = test_predictons$rpart_pred, obs = testList$yMat[, y]),
+                                   gbm_test = postResample(pred = test_predictons$gbm_pred, obs = testList$yMat[, y]),
+                                   rf_test = postResample(pred = test_predictons$rf_pred, obs = testList$yMat[, y]),
+                                   ensemble_test = postResample(pred = test_predictons$pred, obs = testList$yMat[, y]))) %>%
         rename(TestRMSE = RMSE) %>%
         rename(TestRsquared = Rsquared) %>%
         rename(TestMAE = MAE)
       
-
       # train_perf$condition <- paste0(yVec[y], "_sl_algorithm_", metalearner)  # add sample name to train-output
       # test_perf$condition  <- paste0(yVec[y], "_sl_algorithm_", metalearner)  # add sample name to test-output
       # not necessarily needed as condition labels in list structure
