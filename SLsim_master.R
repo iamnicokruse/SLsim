@@ -45,7 +45,7 @@ gridInter <- expand.grid(N = setParam$dgp$N,
                          reliability = setParam$dgp$reliability)
 
 # add seeds to grid
-set.seed(20240203)
+set.seed(03022024)
 seedNum <- sample(1:999999, dim(gridInter)[1], replace = FALSE) 
 gridInter$sampleSeed <- seedNum[1:dim(gridInter)[1]]
 
@@ -53,7 +53,7 @@ gridInter$sampleSeed <- seedNum[1:dim(gridInter)[1]]
 gridNL <- cbind(data = "inter", gridInter)  
 
 # add other dgps and seeds
-set.seed(03022024)
+set.seed(20240203)
 seedNum <- sample(1:999999, dim(gridInter)[1], replace = FALSE) 
 
 gridFull <- rbind(gridNL, 
@@ -62,7 +62,7 @@ gridFull <- rbind(gridNL,
                         sampleSeed = seedNum))
 
 # add nonlinear dgp with 3 dummy variables
-set.seed(02202403)
+set.seed(02032024)
 seedNum <- sample(1:999999, dim(gridInter)[1], replace = FALSE) 
 
 gridFull <- rbind(gridFull, 
@@ -115,8 +115,25 @@ runSLsim <- function(i, data, N, reliability) {
   
   # load pre-saved test samples
   testList = get(load("testList.rda"))
-  testList = testList[c(1,4,7,10,13,16)] # only used for trial runs with N = 100
-  testList = testList[row_idx]
+  if(data == "inter"){
+    if(reliability == "0.7"){
+      testList = testList[1]
+    } else if(reliability == "1"){
+      testList = testList[2]
+    }
+  } else if(data == "pwlinear"){
+    if(reliability == "0.7"){
+      testList = testList[3]
+    } else if(reliability == "1"){
+      testList = testList[4]
+    }
+  } else if(data == "nonlinear3"){
+    if(reliability == "0.7"){
+      testList = testList[5]
+    } else if(reliability == "1"){
+      testList = testList[6]
+    }
+  }
   
   # simulate data as train samples
   dataList <- do.call(mapply, c(FUN = createData, gridFull[row_idx, !colnames(gridFull) %in% "run_seeds"]))
