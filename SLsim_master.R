@@ -45,7 +45,7 @@ gridInter <- expand.grid(N = setParam$dgp$N,
                          reliability = setParam$dgp$reliability)
 
 # add seeds to grid
-set.seed(03022024)
+set.seed(20240203)
 seedNum <- sample(1:999999, dim(gridInter)[1], replace = FALSE) 
 gridInter$sampleSeed <- seedNum[1:dim(gridInter)[1]]
 
@@ -53,7 +53,7 @@ gridInter$sampleSeed <- seedNum[1:dim(gridInter)[1]]
 gridNL <- cbind(data = "inter", gridInter)  
 
 # add other dgps and seeds
-set.seed(20240203)
+set.seed(03022024)
 seedNum <- sample(1:999999, dim(gridInter)[1], replace = FALSE) 
 
 gridFull <- rbind(gridNL, 
@@ -62,7 +62,7 @@ gridFull <- rbind(gridNL,
                         sampleSeed = seedNum))
 
 # add nonlinear dgp with 3 dummy variables
-set.seed(02032024)
+set.seed(02202403)
 seedNum <- sample(1:999999, dim(gridInter)[1], replace = FALSE) 
 
 gridFull <- rbind(gridFull, 

@@ -132,7 +132,7 @@ fitSL <- function(dataList, testList){
           rename(methods = method)                        
       }
       
-      
+      methods = c("glmnet", "rpart", "gbm", "ranger", "ensemble")
       # evaluate final model using testList and comparing performances
       final_model <- ensemble
       
@@ -158,7 +158,8 @@ fitSL <- function(dataList, testList){
                                    ensemble_test = postResample(pred = test_predictons$pred, obs = testList$yMat[, y]))) %>%
         rename(TestRMSE = RMSE) %>%
         rename(TestRsquared = Rsquared) %>%
-        rename(TestMAE = MAE)
+        rename(TestMAE = MAE) %>%
+        cbind(test_perf, methods)
       
       # train_perf$condition <- paste0(yVec[y], "_sl_algorithm_", metalearner)  # add sample name to train-output
       # test_perf$condition  <- paste0(yVec[y], "_sl_algorithm_", metalearner)  # add sample name to test-output
