@@ -74,9 +74,7 @@ gridFull <- rbind(gridFull,
 # length(unique(gridFull$sampleSeed))
 
 # sample data
-createData <- function(data, N, reliability, sampleSeed){
-  
-  set.seed(sampleSeed)
+createData <- function(data, N, reliability){
   
   if (data == "inter"){
     environment(sampleInteractionData) <- environment()  
@@ -136,7 +134,7 @@ runSLsim <- function(i, data, N, reliability) {
   }
   
   # simulate data as train samples
-  dataList <- do.call(mapply, c(FUN = createData, gridFull[row_idx, !colnames(gridFull) %in% "run_seeds"]))
+  dataList <- do.call(mapply, c(FUN = createData, gridFull[row_idx, !colnames(gridFull) %in% c("run_seeds","sampleSeed")]))
     
     # use both to train and validate super learners
     res <- mapply(
