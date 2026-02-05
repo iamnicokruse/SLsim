@@ -37,8 +37,7 @@ source("fitSuperLearner.R")
                           # files in case of errors
 
 # set numbers of Cores to use in parallel computing
-nCoresSampling <- 3 # needs to be changed when cluster is used
-                    # computer used to build code only allows using 3 Cores
+nCoresSampling <- 25 
 
 # generate grid with all combinations of simulation conditions
 gridInter <- expand.grid(N = setParam$dgp$N,
@@ -154,7 +153,7 @@ runSLsim <- function(i, data, N, reliability) {
 plan(multisession, workers = nCoresSampling) # if not run with Rstudio but R, multicore can be used (FORKING)
 
 pTrash <- setParam$dgp$pTrash
-nSamples <- 2
+nSamples <- 10
 dataType <- "inter"
 
 
@@ -170,6 +169,7 @@ run_seeds <- gridFull$run_seeds[gridFull$data == dataType]
 grid_subset <- gridFull[gridFull$data == dataType, ]
 
 # Run simulation in parallel
+start <- Sys.time()
 for (row in seq_len(nrow(grid_subset))) {
   N_val <- grid_subset$N[row]
   rel_val <- grid_subset$reliability[row]
@@ -183,4 +183,5 @@ for (row in seq_len(nrow(grid_subset))) {
     future.seed = TRUE
   )
 }
-
+end <- Sys.time()
+difftime(end, start)
