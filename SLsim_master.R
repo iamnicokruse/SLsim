@@ -2,8 +2,6 @@
 #_____________________________SLsim master script_____________________________#
 ###############################################################################
 
-setwd("~/SLsim")
-
 # packages
 library(caret)
 library(caretEnsemble)
@@ -18,7 +16,11 @@ library(truncnorm)
 library(glmnetUtils)
 
 # package string for future_lapply
-future_packages = c("Matrix","mvtnorm", "truncnorm")
+future_packages <- c(
+  "Matrix","mvtnorm","truncnorm",
+  "caret","ranger","gbm","glmnet"
+)
+
 
 # parameters
 source("MLsim-main/utils/setParameters.R")
