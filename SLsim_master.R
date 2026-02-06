@@ -39,7 +39,7 @@ source("fitSuperLearner.R")
                           # files in case of errors
 
 # set numbers of Cores to use in parallel computing
-nCoresSampling <- 25 
+nCoresSampling <- 10 
 
 # generate grid with all combinations of simulation conditions
 gridInter <- expand.grid(N = setParam$dgp$N,
