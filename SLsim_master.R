@@ -185,5 +185,8 @@ for (row in seq_len(nrow(grid_subset))) {
     future.seed = TRUE
   )
 }
+
 end <- Sys.time()
-difftime(end, start)
+time <- difftime(end, start)
+save(time, file = "timestamp.rda")
+
