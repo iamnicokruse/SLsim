@@ -3,6 +3,9 @@
 ###############################################################################
 
 # packages
+
+.libPaths(c("~/SLsim/Rlibs", .libPaths()))
+
 library(caret)
 library(caretEnsemble)
 library(glmnet)
@@ -14,6 +17,9 @@ library(future.apply)
 library(mvtnorm)
 library(truncnorm)
 library(glmnetUtils)
+
+Sys.setenv(OMP_NUM_THREADS=1)
+Sys.setenv(MKL_NUM_THREADS=1)
 
 # package string for future_lapply
 future_packages <- c(
