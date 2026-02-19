@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=SLsim
-#SBATCH --time=08:00:00
+#SBATCH --time=60:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=10

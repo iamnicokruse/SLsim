@@ -11,6 +11,7 @@ library(caretEnsemble)
 library(glmnet)
 library(ranger)
 library(gbm)
+library(nnls)
 library(tidyverse)
 library(future)
 library(future.apply)
@@ -18,13 +19,14 @@ library(mvtnorm)
 library(truncnorm)
 library(glmnetUtils)
 
+# needed for model fitting to avoid implicit parallelizing of ranger / gbm
 Sys.setenv(OMP_NUM_THREADS=1)
 Sys.setenv(MKL_NUM_THREADS=1)
 
 # package string for future_lapply
 future_packages <- c(
   "Matrix","mvtnorm","truncnorm",
-  "caret","ranger","gbm","glmnet"
+  "caret","ranger","gbm","glmnet", "nnls"
 )
 
 
@@ -196,5 +198,5 @@ for (row in seq_len(nrow(grid_subset))) {
 
 end <- Sys.time()
 time <- difftime(end, start)
-save(time, file = "timestamp.rda")
+# save(time, file = "timestamp.rda")s
 

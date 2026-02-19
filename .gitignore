@@ -6,3 +6,5 @@
 .quarto
 .Rapp.history
 Rlibs/
+results/
+timestamp.rda
