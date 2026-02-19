@@ -77,7 +77,7 @@ fitSL <- function(dataList, testList){
                               rf = models$ranger$bestTune,
                               ensemble = ensemble$ens_model$bestTune)
       
-      # saving weight of metalearner
+      # saving weights of metalearner
      weights_metamodel <- c("intercept" = NA_real_, "rpart" = NA_real_, "ranger" = NA_real_, "gbm" = NA_real_, "glmnet" = NA_real_)
         if(metalearner == "glm") {
           weights_metamodel <- as.matrix(ensemble$ens_model$finalModel$coefficients)
@@ -92,6 +92,10 @@ fitSL <- function(dataList, testList){
           weights_metamodel <- as.matrix(weights_metamodel)
         } else{paste0("No specification of weight extraction for this metalearner")}   
       
+     
+      # saving scaled weights of metalearner
+     scaled_weights_metamodel <- scale_SL_weights(weights_metamodel)
+     
       # save performance in training
       if(metalearner == "glm") {
         train_perf = rbind(glmnet_train = getTrainPerf(models$glmnet),
@@ -166,8 +170,8 @@ fitSL <- function(dataList, testList){
       # test_perf$condition  <- paste0(yVec[y], "_sl_algorithm_", metalearner)  # add sample name to test-output
       # not necessarily needed as condition labels in list structure
       
-      nestedList[[s]] <- setNames(list(train_perf, test_perf, hyperparameters, weights_metamodel),
-                                   c("train_perf", "test_perf", "hyperparameters", "weights"))  
+      nestedList[[s]] <- setNames(list(train_perf, test_perf, hyperparameters, weights_metamodel, scaled_weights_metamodel),
+                                   c("train_perf", "test_perf", "hyperparameters", "weights", "scaled_weights"))  
     }
     resultList[[y]] <- nestedList 
   }

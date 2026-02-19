@@ -125,3 +125,18 @@ get.rows <- function(file, file_list, methods) {
   ((i-1) * length(methods) + 1):(i * length(methods)) # first sample rows 1:5, second sample rows 6:10, ...
 }
 
+scale_SL_weights <- function(w, intercept = TRUE) {
+  
+  if(intercept) {
+    b0 <- w[1]
+    w_main <- w[-1]
+  } else {
+    b0 <- NA
+    w_main <- w
+  }
+  
+  w_scaled <- abs(w_main) / sum(abs(w_main))
+  
+  return(c(intercept = b0, rpart = w_scaled[1], ranger = w_scaled[2],
+           gbm = w_scaled[3], glmnet = w_scaled[4]))
+}
