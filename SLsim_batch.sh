@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name= SLsim_N100
+#SBATCH --job-name=SLsim
 #SBATCH --time=60:00:00
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=10
@@ -8,8 +8,8 @@
 #SBATCH --partition=pub23
 
 # Output/Error sauber ins Hauptverzeichnis (damit Job nicht sofort crasht)
-#SBATCH --output=sim_%j.out
-#SBATCH --error=sim_%j.err
+#SBATCH --output=sim_%A_%a.out
+#SBATCH --error=sim_%A_%a.err
 
 ###############################################################################
 # Projekt starten
@@ -39,6 +39,7 @@ module load R
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 export MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
+export OPENBLAS_NUM_THREADS=1
 
 echo "Working directory: $(pwd)"
 echo "CPUs allocated: $SLURM_CPUS_PER_TASK"
@@ -50,13 +51,13 @@ echo "OMP threads: $OMP_NUM_THREADS"
 
 echo "=== Starte R Simulation ==="
 
-Rscript SLsim_master.R
+Rscript SLsim_master.R $SLURM_ARRAY_TASK_ID
 
 ###############################################################################
 # Logs einsortieren
 ###############################################################################
 
-mv sim_${SLURM_JOB_ID}.out logs/ 2>/dev/null
-mv sim_${SLURM_JOB_ID}.err logs/ 2>/dev/null
+mv sim_${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}.out logs/
+mv sim_${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}.err logs/
 
 echo "=== Job beendet um $(date) ==="

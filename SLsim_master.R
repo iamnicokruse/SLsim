@@ -2,6 +2,19 @@
 #_____________________________SLsim master script_____________________________#
 ###############################################################################
 
+# define iterations of batch job to do them in blocks of 10 (/100)
+args <- commandArgs(trailingOnly = TRUE)
+block_id <- as.numeric(args[1])
+
+nSamples_total <- 100
+block_size <- 10
+
+start <- (block_id - 1) * block_size + 1
+end   <- min(block_id * block_size, nSamples_total)
+
+sample_indices <- start:end
+
+print(sample_indices)
 # packages
 
 .libPaths(c("~/SLsim/Rlibs", .libPaths()))
@@ -19,9 +32,6 @@ library(mvtnorm)
 library(truncnorm)
 library(glmnetUtils)
 
-# needed for model fitting to avoid implicit parallelizing of ranger / gbm
-Sys.setenv(OMP_NUM_THREADS=1)
-Sys.setenv(MKL_NUM_THREADS=1)
 
 # package string for future_lapply
 future_packages <- c(
@@ -108,7 +118,6 @@ createData <- function(data, N, reliability){
 
 # meta-function to combine simulation and model fit
 runSLsim <- function(i, data, N, reliability) {
-  # nSamples is number of simulation runs
   # data can be "inter", "nonlinear3" and "pwlinear" (as each Cluster is
   # supposed to run only one of these conditions)
 
@@ -155,7 +164,7 @@ runSLsim <- function(i, data, N, reliability) {
       SIMPLIFY = FALSE
     )
     
-    folder <- paste0("results/", data)
+    folder <- paste0("results/", data, "/", block-id)
     if (!dir.exists(folder)) dir.create(folder, recursive = TRUE)
     res_name <- paste0(folder, "/res_", data, "_N", N, "_rel", reliability, "_sample", i, ".rda")
     save(res, file = res_name)
@@ -165,14 +174,13 @@ runSLsim <- function(i, data, N, reliability) {
 plan(multisession, workers = nCoresSampling) # if not run with Rstudio but R, multicore can be used (FORKING)
 
 pTrash <- setParam$dgp$pTrash
-nSamples <- 10
 dataType <- "inter"
 
 
 # Create seed strings based on sampleSeeds for reproducibility
 gridFull$run_seeds <- lapply(gridFull$sampleSeed, function(s) {
   set.seed(s, kind = "L'Ecuyer-CMRG")
-  sample.int(.Machine$integer.max, nSamples)
+  sample.int(.Machine$integer.max, nSamples_total)
 })
 
 run_seeds <- gridFull$run_seeds[gridFull$data == dataType]
@@ -187,7 +195,7 @@ for (row in seq_len(nrow(grid_subset))) {
   rel_val <- grid_subset$reliability[row]
   
   future_lapply(
-    X = 1:nSamples,
+    X = sample_indices,
     FUN = function(j) {
       runSLsim(i = j, data = dataType, N = N_val, reliability = rel_val)
     },
@@ -198,5 +206,5 @@ for (row in seq_len(nrow(grid_subset))) {
 
 end <- Sys.time()
 time <- difftime(end, start)
-# save(time, file = "timestamp.rda")s
+save(time, file = "timestamp.rda")
 
