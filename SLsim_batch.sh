@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --job-name=SLsim
+#SBATCH --job-name= SLsim_N100
 #SBATCH --time=60:00:00
 #SBATCH --nodes=1
-#SBATCH --ntasks=1
 #SBATCH --cpus-per-task=10
+#SBATCH --array=1-10
 #SBATCH --mem=32G
 #SBATCH --partition=pub23
 
