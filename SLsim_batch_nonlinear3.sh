@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=SLsim
+#SBATCH --job-name=SLsim_nonlinear3
 #SBATCH --time=60:00:00
 #SBATCH --nodes=1
 #SBATCH --exclusive
@@ -51,7 +51,7 @@ echo "OMP threads: $OMP_NUM_THREADS"
 
 echo "=== Starte R Simulation ==="
 
-Rscript SLsim_master.R $SLURM_ARRAY_TASK_ID
+Rscript SLsim_master_nonlinear3.R $SLURM_ARRAY_TASK_ID
 
 ###############################################################################
 # Logs einsortieren
