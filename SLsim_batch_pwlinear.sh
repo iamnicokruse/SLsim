@@ -37,8 +37,8 @@ module load R
 # Threads korrekt setzen
 ###############################################################################
 
-export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-export MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
+export OMP_NUM_THREADS=1
+export MKL_NUM_THREADS=1
 export OPENBLAS_NUM_THREADS=1
 
 echo "Working directory: $(pwd)"
