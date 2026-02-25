@@ -164,7 +164,7 @@ runSLsim <- function(i, data, N, reliability) {
       SIMPLIFY = FALSE
     )
     
-    folder <- paste0("results/", data, "/", block-id)
+    folder <- paste0("results/", data, "/", block_id)
     if (!dir.exists(folder)) dir.create(folder, recursive = TRUE)
     res_name <- paste0(folder, "/res_", data, "_N", N, "_rel", reliability, "_sample", i, ".rda")
     save(res, file = res_name)
