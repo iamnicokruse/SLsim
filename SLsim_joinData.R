@@ -151,8 +151,9 @@ for (jDGP in dgpVec) {
 
 # Use priorly summarized lists to built data frames for each dgp and save 
 # performances within these as columns (one for each performance metric x
-# algorithm x N combination). These data frames can then be used to analyze performances
-# across all dgp x N combinations. Done for train and test performance
+# algorithm x N combination). These data frames can then be used to analyze 
+# performances across all dgp x N combinations. Done for train and test 
+# performance (table 45 x 7200 obs)
 
 for (hDGP in dgpVec) {
   filePath <- paste0(filePath <- paste0(resFolder, "/", hDGP, "/dependentMeasures/"))
@@ -201,6 +202,63 @@ for (hDGP in dgpVec) {
   gc()
 }
 
+# repeat above used loop to create data frames similar but with columns for each
+# metalearner algorithm (table 72 x 1800 obs)
 
+for (kDGP in dgpVec) {
+  filePath <- paste0(filePath <- paste0(resFolder, "/", kDGP, "/dependentMeasures/"))
+  perfVec <- c("train", "test")
+  
+  for (iPerf in perfVec) {
+    fileName <- paste0("res_", iPerf, "_perf_SLspec_", kDGP, ".rda")
+    tmp <- get(load(paste0(filePath, fileName)))
+    nVec <- c("N100", "N1000", "N3000")
+    
+    for (iN in nVec) {
+      slVec <- c("sl_algorithm_nnls", "sl_algorithm_glm", "sl_algorithm_glmnet", 
+                 "sl_algorithm_ranger")
+      
+      for (iSL in slVec) {
+        if (iN == "N100" & iSL == "sl_algorithm_nnls") {
+          nRow <- length(tmp[[kDGP]][[iN]][[iSL]])/4
+          PerfDF_SLspec <- data.frame(matrix(nrow = nRow, ncol = 0))
+        }
+        metricVec <- c("RMSE", "MAE", "Rsquared")
+        
+        for (iMetric in metricVec) {
+          algoVec <- c("glmnet", "rpart", "gbm", "ranger", "ensemble")
+          
+          for(iAlgo in algoVec) {
+            if (iPerf == "train") {
+              idxMetric <- paste0("Train", iMetric)
+            } else if (iPerf == "test") {
+              idxMetric = paste0("Test", iMetric)
+            }
+            idxValue <- which(algoVec == iAlgo)
+            
+            valueVec <- c()
+            value <- NULL
+            for (iValues in seq_len(length(tmp[[kDGP]][[iN]][[iSL]]))) { 
+              if (names(tmp[[kDGP]][[iN]][[iSL]][iValues]) == idxMetric) {
+                value = tmp[[kDGP]][[iN]][[iSL]][[iValues]][idxValue]
+                valueVec <- c(valueVec, value)
+              }
+            }
+            if(iAlgo == "ensemble") {
+              iAlgo <- paste0(iSL)
+            }
+            PerfDF_SLspec[(paste0(iN, "_", iMetric, "_", iAlgo))] <- valueVec
+          }
+        }
+      }
+    }
+    depMeasures = paste0(resFolder, "/", kDGP, "/dependentMeasures")
+    dfName <- paste0(depMeasures, "/res_", kDGP, "_df_SLspec_",iPerf ,".rda")
+    save(PerfDF_SLspec, file = dfName)
+  }
+  print("done")
+  gc()
+}
 
-
+# check if it worked (perfDf row 1:1800 should match perfDF rows as all values for sl_algorithm_nnls where extracted
+# first)
