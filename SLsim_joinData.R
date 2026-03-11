@@ -101,9 +101,9 @@ for (jDGP in dgpVec) {
         idxN <- paste0("N", subGrid[iFile, "N"])
         idxMetamodel <- paste0("sl_algorithm_", iMetamodel)
         
-        if (subGrid[iFile, "reliability"] == 0.7) {
-          idxRel = "1"
-        } else {idxRel = "2"}
+        # if (subGrid[iFile, "reliability"] == 0.7) {
+        #   idxRel = "1"
+        # } else {idxRel = "2"}
         
         for(iSample in 1:100) {
           trainPerf[[jDGP]][[idxN]] <- c(
@@ -260,5 +260,127 @@ for (kDGP in dgpVec) {
   gc()
 }
 
-# check if it worked (perfDf row 1:1800 should match perfDF rows as all values for sl_algorithm_nnls where extracted
-# first)
+# for one research question one has to look at all factors that where manipulated
+# thus a data frame with 1296 columns and 100 rows is needed (all metrics x all 
+# conditions)
+
+for (lDGP in dgpVec) {
+  subGrid <- condGrid[which(condGrid$data == lDGP),]
+  filePath <- paste0(resFolder, "/", lDGP, "/dependentMeasures/")
+  
+  trainPerf_allCond <- list()
+  testPerf_allCond <- list()
+  
+  for (iFile in 1:6) {
+    fileName <- paste0("res_", lDGP, "_N", subGrid[iFile, "N"], "_rel",
+                       subGrid[iFile, "reliability"], "_6x9_all_iter.rda")
+    
+    tmp <- get(load(paste0(filePath, fileName)))
+    CondVec <- names(tmp)
+    
+    for(iCond in CondVec) {
+      metamodelVec <- setParam$modfit$superlearner
+      
+      for(iMetamodel in metamodelVec) {
+        idxN <- paste0("N", subGrid[iFile, "N"])
+        idxMetamodel <- paste0("sl_algorithm_", iMetamodel)
+        
+        if (subGrid[iFile, "reliability"] == 0.7) {
+          idxRel = "0.7"
+        } else {idxRel = "1"}
+        
+        for(iSample in 1:100) {
+            trainPerf_allCond[[lDGP]][[idxRel]][[iCond]][[idxN]][[idxMetamodel]] <- c(
+            trainPerf_allCond[[lDGP]][[idxRel]][[iCond]][[idxN]][[idxMetamodel]],
+            tmp[[iCond]][[iSample]][[idxMetamodel]]$train_perf
+          )
+          testPerf_allCond[[lDGP]][[idxRel]][[iCond]][[idxN]][[idxMetamodel]] <- c(
+            testPerf_allCond[[lDGP]][[idxRel]][[iCond]][[idxN]][[idxMetamodel]],
+            tmp[[iCond]][[iSample]][[idxMetamodel]]$test_perf
+          )
+          
+          # if needed, weights (scaled) and hyperparameters can be 
+          # summarized this way, as well
+          
+        }
+      }  
+    }
+  }
+  depMeasures = paste0(resFolder, "/", lDGP, "/dependentMeasures")
+  
+  trainPerfFile_allCond <- paste0(depMeasures, "/res_train_perf_allCond_", lDGP, ".rda")
+  save(trainPerf_allCond, file = trainPerfFile_allCond)
+  
+  testPerfFile_allCond <- paste0(depMeasures, "/res_test_perf_allCond_", lDGP, ".rda")
+  save(testPerf_allCond, file = testPerfFile_allCond)
+  
+  print("done")
+  gc()
+}
+
+# next loop will use new lists to put them into data frames
+
+for (mDGP in dgpVec) {
+  filePath <- paste0(filePath <- paste0(resFolder, "/", mDGP, "/dependentMeasures/"))
+  perfVec <- c("train", "test")
+  
+  for (iPerf in perfVec) {
+    fileName <- paste0("res_", iPerf, "_perf_allCond_", mDGP, ".rda")
+    tmp <- get(load(paste0(filePath, fileName)))
+    relVec <- c("0.7", "1")
+    
+    for (iRel in relVec) {
+      CondVec <- names(tmp[[mDGP]][[iRel]])
+      
+      for(iCond in CondVec) {
+        nVec <- c("N100", "N1000", "N3000")
+        
+        for (iN in nVec) {
+          slVec <- c("sl_algorithm_nnls", "sl_algorithm_glm", "sl_algorithm_glmnet", 
+                     "sl_algorithm_ranger")
+          
+          for (iSL in slVec) {
+            if (iN == "N100" & iRel == "0.7" & iCond == CondVec[1] & iSL == "sl_algorithm_nnls") {
+              nRow <- length(tmp[[mDGP]][[iRel]][[iCond]][[iN]][[iSL]])/4
+              PerfDF_allCond <- data.frame(matrix(nrow = nRow, ncol = 0))
+            }
+            metricVec <- c("RMSE", "MAE", "Rsquared")
+            
+            for (iMetric in metricVec) {
+              algoVec <- c("glmnet", "rpart", "gbm", "ranger", "ensemble")
+              
+              for(iAlgo in algoVec) {
+                if (iPerf == "train") {
+                  idxMetric <- paste0("Train", iMetric)
+                } else if (iPerf == "test") {
+                  idxMetric = paste0("Test", iMetric)
+                }
+                idxValue <- which(algoVec == iAlgo)
+                
+                valueVec <- c()
+                value <- NULL
+                for (iValues in seq_len(length(tmp[[mDGP]][[iRel]][[iCond]][[iN]][[iSL]]))) { 
+                  if (names(tmp[[mDGP]][[iRel]][[iCond]][[iN]][[iSL]][iValues]) == idxMetric) {
+                    value = tmp[[mDGP]][[iRel]][[iCond]][[iN]][[iSL]][[iValues]][idxValue]
+                    valueVec <- c(valueVec, value)
+                  }
+                }
+                if(iAlgo == "ensemble") {
+                  iAlgo <- paste0(iSL)
+                }
+                PerfDF_allCond[(paste0(iRel, "_", iCond, "_", iN, "_", iMetric, "_", iAlgo))] <- valueVec
+              }
+            }
+          }
+        }
+      }
+    }
+    depMeasures = paste0(resFolder, "/", mDGP, "/dependentMeasures")
+    dfName <- paste0(depMeasures, "/res_", mDGP, "_df_allCond_",iPerf ,".rda")
+    save(PerfDF_allCond, file = dfName)
+  }
+  print("done")
+  gc()
+}
+
+
