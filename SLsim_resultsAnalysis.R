@@ -52,7 +52,7 @@ for (iDGP in dgpVec) {
         group_by(dgp, lin_inter, Model, N, R2, rel) %>%
         mutate(sample_no = seq_len(n())) %>%
         ungroup() %>%
-        mutate(ID = interaction(dgp, lin_inter, Model, N, R2, rel, sample_no, drop = TRUE)) %>%
+        mutate(ID = interaction(dgp, lin_inter, N, R2, rel, sample_no, drop = TRUE)) %>%
         rename(!!paste0(iData, "_rmse") := !!sym(paste0(iData, "_Value")))
       rmse$Metric <- NULL
       rmse$sample_no <- NULL
@@ -61,7 +61,7 @@ for (iDGP in dgpVec) {
         group_by(dgp, lin_inter, Model, N, R2, rel) %>%
         mutate(sample_no = seq_len(n())) %>%
         ungroup() %>%
-        mutate(ID = interaction(dgp, lin_inter, Model, N, R2, rel, sample_no, drop = TRUE))%>%
+        mutate(ID = interaction(dgp, lin_inter, N, R2, rel, sample_no, drop = TRUE))%>%
         rename(!!paste0(iData, "_mae") := !!sym(paste0(iData, "_Value")))
       mae$Metric <- NULL
       mae$sample_no <- NULL
@@ -70,7 +70,7 @@ for (iDGP in dgpVec) {
         group_by(dgp, lin_inter, Model, N, R2, rel) %>%
         mutate(sample_no = seq_len(n())) %>%
         ungroup() %>%
-        mutate(ID = interaction(dgp, lin_inter, Model, N, R2, rel, sample_no, drop = TRUE)) %>%
+        mutate(ID = interaction(dgp, lin_inter, N, R2, rel, sample_no, drop = TRUE)) %>%
         rename(!!paste0(iData, "_rsquared") := !!sym(paste0(iData, "_Value")))
       rsq$Metric <- NULL
       rsq$sample_no <- NULL
@@ -106,7 +106,7 @@ for (iDGP in dgpVec) {
         group_by(dgp, lin_inter, Model, N, R2, rel) %>%
         mutate(sample_no = seq_len(n())) %>%
         ungroup() %>%
-        mutate(ID = interaction(dgp, lin_inter, Model, N, R2, rel, sample_no, drop = TRUE)) %>%
+        mutate(ID = interaction(dgp, lin_inter, N, R2, rel, sample_no, drop = TRUE)) %>%
         rename(!!paste0(iData, "_rmse") := !!sym(paste0(iData, "_Value")))
       rmse$Metric <- NULL
       rmse$sample_no <- NULL
@@ -115,7 +115,7 @@ for (iDGP in dgpVec) {
         group_by(dgp, lin_inter, Model, N, R2, rel) %>%
         mutate(sample_no = seq_len(n())) %>%
         ungroup() %>%
-        mutate(ID = interaction(dgp, lin_inter, Model, N, R2, rel, sample_no, drop = TRUE))%>%
+        mutate(ID = interaction(dgp, lin_inter, N, R2, rel, sample_no, drop = TRUE))%>%
         rename(!!paste0(iData, "_mae") := !!sym(paste0(iData, "_Value")))
       mae$Metric <- NULL
       mae$sample_no <- NULL
@@ -124,7 +124,7 @@ for (iDGP in dgpVec) {
         group_by(dgp, lin_inter, Model, N, R2, rel) %>%
         mutate(sample_no = seq_len(n())) %>%
         ungroup() %>%
-        mutate(ID = interaction(dgp, lin_inter, Model, N, R2, rel, sample_no, drop = TRUE)) %>%
+        mutate(ID = interaction(dgp, lin_inter, N, R2, rel, sample_no, drop = TRUE)) %>%
         rename(!!paste0(iData, "_rsquared") := !!sym(paste0(iData, "_Value")))
       rsq$Metric <- NULL
       rsq$sample_no <- NULL
@@ -151,12 +151,14 @@ for (iDGP in dgpVec) {
   }
 }
 
-
-
-
-
-
-
+# turn all predictors to factors
+aov_data <- aov_data %>%
+  mutate(
+    dgp = factor(dgp),
+    N = factor(N),
+    rel = factor(rel),
+    Model = factor(Model)
+  )
 
 # aov_data for anova w/ 
 # ... between: 3 x 2 x 3 x 3 x 3  
@@ -166,57 +168,56 @@ for (iDGP in dgpVec) {
 #   lin_inter (3)   {0.0_1.0, 0.5_0.5, 1.0_0.0}
 #   dgp       (3)   {inter, pwlinear, nonlinear3}
 # ... within:
-#   model {glmnet, rpart, gbm, ranger}
+# base model {glmnet, rpart, gbm, ranger, ensemble}
+# meta model {nnls, glm, glmnet, ranger}
 
-
-
-
-   
-rmse <- subset(aov_data, aov_data$Metric == "RMSE") %>%
-    group_by(N, dgp, Model) %>%
-    mutate(sim = row_number()) %>%
-    ungroup() %>%
-    mutate(ID = interaction(N, dgp, sim, drop = TRUE)) 
-
-mae  <- subset(aov_data, aov_data$Metric == "MAE") %>%
-  group_by(N, dgp, Model) %>%
-  mutate(sim = row_number()) %>%
-  ungroup() %>%
-  mutate(ID = interaction(N, dgp, sim, drop = TRUE))
-
-rsq  <- subset(aov_data, aov_data$Metric == "Rsquared") %>%
-  group_by(N, dgp, Model) %>%
-  mutate(sim = row_number()) %>%
-  ungroup() %>%
-  mutate(ID = interaction(N, dgp, sim, drop = TRUE))
- 
    
 aov_rmse <- aov_ez(id = "ID",
-                   dv = "Value",
-                   data = rmse,
-                   between = c("N", "dgp"),
-                   within = "Model",
-                   fun_aggregate = mean)
+                   dv = "test_rmse",
+                   data = aov_data,
+                   between = c("dgp", "lin_inter", "N", "R2", "rel"),
+                   within = "Model")
 
 aov_mae <- aov_ez(id = "ID",
-                  dv = "Value",
-                  data = mae,
-                  between = c("N", "dgp"),
-                  within = "Model",
-                  fun_aggregate = mean)
+                   dv = "test_mae",
+                   data = aov_data,
+                   between = c("dgp", "lin_inter", "N", "R2", "rel"),
+                   within = "Model")
 
 aov_rsquared <- aov_ez(id = "ID",
-                       dv = "Value",
-                       data = rsq,
-                       between = c("N", "dgp"),
-                       within = "Model",
-                       fun_aggregate = mean)
+                   dv = "test_rsquared",
+                   data = aov_data,
+                   between = c("dgp", "lin_inter", "N", "R2", "rel"),
+                   within = "Model")
 
+# calculate effect sizes (generalized eta_squared)
 
+eta2rmse <- eta_squared(
+  aov_rmse, # fitted model
+  partial = FALSE, # not partial!
+  generalized = TRUE, # generalized eta squared
+  ci = 0.95,
+  verbose = TRUE)
 
+(eta2rmse_ordered <- eta2rmse[order(eta2rmse$Eta2_generalized, decreasing = T),])
 
+eta2mae <- eta_squared(
+  aov_mae, # fitted model
+  partial = FALSE, # not partial!
+  generalized = TRUE, # generalized eta squared
+  ci = 0.95,
+  verbose = TRUE)
 
+(eta2mae_ordered <- eta2mae[order(eta2mae$Eta2_generalized, decreasing = T),])
 
+eta2rsquared <- eta_squared(
+  aov_rsquared, # fitted model
+  partial = FALSE, # not partial!
+  generalized = TRUE, # generalized eta squared
+  ci = 0.95,
+  verbose = TRUE)
+
+(eta2rsquared_ordered <- eta2rsquared[order(eta2rsquared$Eta2_generalized, decreasing = T),])
  
   
   
