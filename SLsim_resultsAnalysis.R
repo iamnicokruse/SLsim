@@ -13,7 +13,7 @@ library(cowplot)
 library(purrr)
 
 source("MLsim-main/utils/setParameters.R")
-source("SLtools.R") # included plot funtions from MLsim-Project
+source("SLtools.R") # included plot functions from MLsim-Project
 
 ## load and restructure data to match expected data frame for anova 
 dgpVec <- c("inter", "pwlinear", "nonlinear3")
