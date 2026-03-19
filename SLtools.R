@@ -140,3 +140,43 @@ scale_SL_weights <- function(w, intercept = TRUE) {
   return(c(intercept = b0, rpart = w_scaled[1], ranger = w_scaled[2],
            gbm = w_scaled[3], glmnet = w_scaled[4]))
 }
+
+
+# functions from MLsim Project to built heatmap 
+themeFunction <- function(plot) {
+  plot + theme(panel.grid.major = element_blank(), 
+               panel.grid.minor = element_blank(),
+               panel.background = element_blank(), 
+               axis.text.y = element_text(size = 20),
+               axis.text.x = element_text(size = 20),
+               axis.title.x = element_text(size = 20),
+               axis.title.y = element_text(size = 20),
+               legend.title=element_text(size=20), 
+               legend.text=element_text(size=15),
+               legend.key.size = unit(2.5, 'cm'),
+               axis.ticks.x = element_blank(),
+               axis.ticks.y = element_blank(),
+               strip.background = element_blank(), # remove facet background
+               #strip.background = element_rect(color="black", fill="white", size=1.5, linetype="solid"), # only black frame
+               strip.text = element_text(size = 15), # remove facet text
+               axis.line = element_line(colour = "white"))
+}
+
+plotHeatmap <- function(data, xVar, yVar, xLabel = "", yLabel= "") {
+  ggplot(data, 
+         aes(x = xVar, y = yVar, fill = emmean)) + 
+    geom_tile() +
+    geom_text(aes(x = xVar, y = yVar, label = round(emmean, 2)), 
+              color="black", size=rel(5)) +
+    scale_fill_gradientn("average R² across other conditions",
+                         # colours = c(colRamp[length(colRamp):1], colRamp),
+                         colours = c(colRamp[length(colRamp):1]),
+                         values = scales::rescale(
+                           # limited do +/- limit.bias
+                           x = seq(from = 0,
+                                   to = limit.bias, length.out = 200),
+                           from = c(0, limit.bias)),
+                         limits = c(0, limit.bias)) +
+    xlab(xLabel) + ylab(yLabel) + guides(fill = "none")
+}
+
