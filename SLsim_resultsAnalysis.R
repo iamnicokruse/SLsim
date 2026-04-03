@@ -1514,6 +1514,114 @@ df_emmNxModelxR2xlin_inter$lin_inter <- factor(df_emmNxModelxR2xlin_inter$lin_in
 (pNxModelxR2xlin_inter <- themeFunction(pNxModelxR2xlin_inter))
 
 
+## closer investigating scaled weights of glmnet as meta model 
 
+# restructuring data similar to performance measures above
 
-
+for (iDGP in dgpVec) {
+  dataVec = c("train", "test")
+  for(iData in dataVec) {
+    
+    filePath <- paste0("results/", iDGP, "/dependentMeasures/")
+    fileName <- paste0("res_", iDGP, "_df_scaledWeightsGLMnet_", iData, ".rda")
+    
+    tmp <- get(load(paste0(filePath, fileName)))
+    
+    if(iData == "train") {
+      tmp_long <- pivot_longer(tmp,
+                               cols = everything(),      
+                               names_to = "ID",
+                               values_to = "scaled_weight_train")
+      
+      tmp_long <- separate(tmp_long, ID, into = c("rel", "R2_tmp", "lin_inter_tmp",
+                                                  "lin_inter_tmp2", "N", "baselearner"), 
+                           sep = "_") %>%
+        mutate(R2 = as.factor(sub("R2([0-9.]+)lin", "\\1", R2_tmp))) %>%
+        mutate(lin_inter = as.factor(paste("lin", lin_inter_tmp, lin_inter_tmp2, 
+                                           sep = "_")))
+      
+      tempCols <- c("R2_tmp", "lin_inter_tmp", "lin_inter_tmp2")
+      tmp_long <- tmp_long[, !names(tmp_long) %in% tempCols]
+      tmp_long$dgp <- iDGP
+      tmp_long <- tmp_long[, order(colnames(tmp_long))]
+      
+      baselearnerVec <- c("intercept", "rpart", "ranger", "gbm", "glmnet")
+      
+      for (iBase in baselearnerVec) {
+        tmp_df <- subset(tmp_long, baselearner == iBase) %>%
+          group_by(dgp, lin_inter, baselearner, N, R2, rel) %>%
+          mutate(sample_no = seq_len(n())) %>%
+          ungroup() %>%
+          mutate(ID = interaction(dgp, lin_inter, N, R2, rel, sample_no, drop = TRUE)) %>%
+          rename(!!paste0(iData, "_", iBase) := !!sym(paste0("scaled_weight_train")))
+        tmp_df$baselearner <- NULL
+        tmp_df$sample_no <- NULL
+        
+        tmp_df_name <- "tmp_df"
+        baselearner_name <- paste0("tmp_", iBase)
+        assign(baselearner_name, get(tmp_df_name))
+      }
+      
+      tmp_final = left_join(tmp_intercept, tmp_rpart, by = c("dgp", "lin_inter", "N", "R2", "rel", "ID"))
+      tmp_final = left_join(tmp_final, tmp_ranger, by = c("dgp", "lin_inter", "N", "R2", "rel", "ID"))
+      tmp_final = left_join(tmp_final, tmp_gbm, by = c("dgp", "lin_inter", "N", "R2", "rel", "ID"))
+      tmp_final = left_join(tmp_final, tmp_glmnet, by = c("dgp", "lin_inter", "N", "R2", "rel", "ID"))
+      tmp_final <- tmp_final[, order(colnames(tmp_final))]
+      
+    } else if (iData == "test") {
+      tmp_long <- pivot_longer(tmp,
+                               cols = everything(),      
+                               names_to = "ID",
+                               values_to = "scaled_weight_test")
+      
+      tmp_long <- separate(tmp_long, ID, into = c("rel", "R2_tmp", "lin_inter_tmp",
+                                                  "lin_inter_tmp2", "N", "baselearner"), 
+                           sep = "_") %>%
+        mutate(R2 = as.factor(sub("R2([0-9.]+)lin", "\\1", R2_tmp))) %>%
+        mutate(lin_inter = as.factor(paste("lin", lin_inter_tmp, lin_inter_tmp2, 
+                                           sep = "_")))
+      
+      tempCols <- c("R2_tmp", "lin_inter_tmp", "lin_inter_tmp2")
+      tmp_long <- tmp_long[, !names(tmp_long) %in% tempCols]
+      tmp_long$dgp <- iDGP
+      tmp_long <- tmp_long[, order(colnames(tmp_long))]
+      
+      baselearnerVec <- c("intercept", "rpart", "ranger", "gbm", "glmnet")
+      
+      for (iBase in baselearnerVec) {
+        tmp_df <- subset(tmp_long, baselearner == iBase) %>%
+          group_by(dgp, lin_inter, baselearner, N, R2, rel) %>%
+          mutate(sample_no = seq_len(n())) %>%
+          ungroup() %>%
+          mutate(ID = interaction(dgp, lin_inter, N, R2, rel, sample_no, drop = TRUE)) %>%
+          rename(!!paste0(iData, "_", iBase) := !!sym(paste0("scaled_weight_test")))
+        tmp_df$baselearner <- NULL
+        tmp_df$sample_no <- NULL
+        
+        tmp_df_name <- "tmp_df"
+        baselearner_name <- paste0("tmp_", iBase)
+        assign(baselearner_name, get(tmp_df_name))
+      }
+      
+      tmp_final = left_join(tmp_intercept, tmp_rpart, by = c("dgp", "lin_inter", "N", "R2", "rel", "ID"))
+      tmp_final = left_join(tmp_final, tmp_ranger, by = c("dgp", "lin_inter", "N", "R2", "rel", "ID"))
+      tmp_final = left_join(tmp_final, tmp_gbm, by = c("dgp", "lin_inter", "N", "R2", "rel", "ID"))
+      tmp_final = left_join(tmp_final, tmp_glmnet, by = c("dgp", "lin_inter", "N", "R2", "rel", "ID"))
+      tmp_final <- tmp_final[, order(colnames(tmp_final))]
+    }
+    if (iData == "train") {
+      train <- tmp_final
+    } else if (iData == "test") {
+      test <- tmp_final
+      scaledWeightsGLMnetDFwide_dgpSpec <- left_join(train, test,
+                                                     by = c("dgp", "lin_inter", "N", "R2", "rel", "ID"),
+                                                     suffix = c("", ""))
+    }
+  }
+  
+  if (iDGP == "inter") {
+    scaledWeightsGLMnetDFwide <- scaledWeightsGLMnetDFwide_dgpSpec
+  } else {
+    scaledWeightsGLMnetDFwide <- rbind(scaledWeightsGLMnetDFwide, scaledWeightsGLMnetDFwide_dgpSpec)
+  }
+}
