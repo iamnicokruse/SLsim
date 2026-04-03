@@ -204,30 +204,30 @@ condGrid <- expand.grid(data = dgpVec,
 # 
 # # repeat above used loop to create data frames similar but with columns for each
 # # metalearner algorithm (table 72 x 1800 obs)
-# 
+
 # for (kDGP in dgpVec) {
 #   filePath <- paste0(filePath <- paste0(resFolder, "/", kDGP, "/dependentMeasures/"))
 #   perfVec <- c("train", "test")
-#   
+# 
 #   for (iPerf in perfVec) {
 #     fileName <- paste0("res_", iPerf, "_perf_SLspec_", kDGP, ".rda")
 #     tmp <- get(load(paste0(filePath, fileName)))
 #     nVec <- c("N100", "N1000", "N3000")
-#     
+# 
 #     for (iN in nVec) {
-#       slVec <- c("sl_algorithm_nnls", "sl_algorithm_glm", "sl_algorithm_glmnet", 
+#       slVec <- c("sl_algorithm_nnls", "sl_algorithm_glm", "sl_algorithm_glmnet",
 #                  "sl_algorithm_ranger")
-#       
+# 
 #       for (iSL in slVec) {
 #         if (iN == "N100" & iSL == "sl_algorithm_nnls") {
 #           nRow <- length(tmp[[kDGP]][[iN]][[iSL]])/4
 #           PerfDF_SLspec <- data.frame(matrix(nrow = nRow, ncol = 0))
 #         }
 #         metricVec <- c("RMSE", "MAE", "Rsquared")
-#         
+# 
 #         for (iMetric in metricVec) {
 #           algoVec <- c("glmnet", "rpart", "gbm", "ranger", "ensemble")
-#           
+# 
 #           for(iAlgo in algoVec) {
 #             if (iPerf == "train") {
 #               idxMetric <- paste0("Train", iMetric)
@@ -235,10 +235,10 @@ condGrid <- expand.grid(data = dgpVec,
 #               idxMetric = paste0("Test", iMetric)
 #             }
 #             idxValue <- which(algoVec == iAlgo)
-#             
+# 
 #             valueVec <- c()
 #             value <- NULL
-#             for (iValues in seq_len(length(tmp[[kDGP]][[iN]][[iSL]]))) { 
+#             for (iValues in seq_len(length(tmp[[kDGP]][[iN]][[iSL]]))) {
 #               if (names(tmp[[kDGP]][[iN]][[iSL]][iValues]) == idxMetric) {
 #                 value = tmp[[kDGP]][[iN]][[iSL]][[iValues]][idxValue]
 #                 valueVec <- c(valueVec, value)
@@ -263,14 +263,18 @@ condGrid <- expand.grid(data = dgpVec,
 # data frame with 1296 columns and 100 rows  (all metrices x all 
 # conditions)
 
-# this data frame is needed for all analyses
+# lDGP - Loop makes lists for performance data frames for all conditions
+# (currently as comments using #) and lists for scaled weight extraction for
+# glmnet as super learner algorithm (currently active)
 
 for (lDGP in dgpVec) {
   subGrid <- condGrid[which(condGrid$data == lDGP),]
   filePath <- paste0(resFolder, "/", lDGP, "/dependentMeasures/")
   
-  trainPerf_allCond <- list()
-  testPerf_allCond <- list()
+  # trainPerf_allCond <- list()
+  # testPerf_allCond <- list()
+  trainWeights_sl_glmnet <- list()
+  testWeights_sl_glmnet <- list()
   
   for (iFile in 1:6) {
     fileName <- paste0("res_", lDGP, "_N", subGrid[iFile, "N"], "_rel",
@@ -291,14 +295,24 @@ for (lDGP in dgpVec) {
         } else {idxRel = "1"}
         
         for(iSample in 1:100) {
-            trainPerf_allCond[[lDGP]][[idxRel]][[iCond]][[idxN]][[idxMetamodel]] <- c(
-            trainPerf_allCond[[lDGP]][[idxRel]][[iCond]][[idxN]][[idxMetamodel]],
-            tmp[[iCond]][[iSample]][[idxMetamodel]]$train_perf
-          )
-          testPerf_allCond[[lDGP]][[idxRel]][[iCond]][[idxN]][[idxMetamodel]] <- c(
-            testPerf_allCond[[lDGP]][[idxRel]][[iCond]][[idxN]][[idxMetamodel]],
-            tmp[[iCond]][[iSample]][[idxMetamodel]]$test_perf
-          )
+          # trainPerf_allCond[[lDGP]][[idxRel]][[iCond]][[idxN]][[idxMetamodel]] <- c(
+          #   trainPerf_allCond[[lDGP]][[idxRel]][[iCond]][[idxN]][[idxMetamodel]],
+          #   tmp[[iCond]][[iSample]][[idxMetamodel]]$train_perf
+          # )
+          # testPerf_allCond[[lDGP]][[idxRel]][[iCond]][[idxN]][[idxMetamodel]] <- c(
+          #   testPerf_allCond[[lDGP]][[idxRel]][[iCond]][[idxN]][[idxMetamodel]],
+          #   tmp[[iCond]][[iSample]][[idxMetamodel]]$test_perf
+          # )
+          if(iMetamodel == "glmnet") {
+            trainWeights_sl_glmnet[[lDGP]][[idxRel]][[iCond]][[idxN]] <- c(
+              trainWeights_sl_glmnet[[lDGP]][[idxRel]][[iCond]][[idxN]],
+              tmp[[iCond]][[iSample]][[idxMetamodel]]$scaled_weights
+            )
+            testWeights_sl_glmnet[[lDGP]][[idxRel]][[iCond]][[idxN]] <- c(
+              testWeights_sl_glmnet[[lDGP]][[idxRel]][[iCond]][[idxN]],
+              tmp[[iCond]][[iSample]][[idxMetamodel]]$scaled_weights
+            )
+          }
           
           # if needed, weights (scaled) and hyperparameters can be 
           # summarized this way, as well
@@ -309,11 +323,17 @@ for (lDGP in dgpVec) {
   }
   depMeasures = paste0(resFolder, "/", lDGP, "/dependentMeasures")
   
-  trainPerfFile_allCond <- paste0(depMeasures, "/res_train_perf_allCond_", lDGP, ".rda")
-  save(trainPerf_allCond, file = trainPerfFile_allCond)
+  # trainPerfFile_allCond <- paste0(depMeasures, "/res_train_perf_allCond_", lDGP, ".rda")
+  # save(trainPerf_allCond, file = trainPerfFile_allCond)
+  # 
+  # testPerfFile_allCond <- paste0(depMeasures, "/res_test_perf_allCond_", lDGP, ".rda")
+  # save(testPerf_allCond, file = testPerfFile_allCond)
   
-  testPerfFile_allCond <- paste0(depMeasures, "/res_test_perf_allCond_", lDGP, ".rda")
-  save(testPerf_allCond, file = testPerfFile_allCond)
+  trainWeightsFile_sl_glmnet <- paste0(depMeasures, "/res_train_scaledWeightsGLMnet_", lDGP, ".rda")
+  save(trainWeights_sl_glmnet, file = trainWeightsFile_sl_glmnet)
+  
+  testWeightsFile_sl_glmnet <- paste0(depMeasures, "/res_test_scaledWeightsGLMnet_", lDGP, ".rda")
+  save(testWeights_sl_glmnet, file = testWeightsFile_sl_glmnet)
   
   print("done")
   gc()
@@ -384,4 +404,50 @@ for (mDGP in dgpVec) {
   gc()
 }
 
+# this loop creates data frame of weights given to base learner in each super learner
+# in all conditions
 
+for (nDGP in dgpVec) {
+  filePath <- paste0(filePath <- paste0(resFolder, "/", nDGP, "/dependentMeasures/"))
+  perfVec <- c("train", "test")
+  
+  for (iPerf in perfVec) {
+    fileName <- paste0("res_", iPerf, "_scaledWeightsGLMnet_", nDGP, ".rda")
+    tmp <- get(load(paste0(filePath, fileName)))
+    relVec <- c("0.7", "1")
+    
+    for (iRel in relVec) {
+      CondVec <- names(tmp[[nDGP]][[iRel]])
+      
+      for(iCond in CondVec) {
+        nVec <- c("N100", "N1000", "N3000")
+        
+        for (iN in nVec) {
+          if (iN == "N100" & iRel == "0.7" & iCond == CondVec[1]) {
+            nRow <- length(tmp[[nDGP]][[iRel]][[iCond]][[iN]])/5
+            scaledWeightsDF_glmnet <- data.frame(matrix(nrow = nRow, ncol = 0))
+          }
+          
+          weightVec <- c("intercept", "rpart", "ranger", "gbm", "glmnet")
+          
+          for(iWeight in weightVec) {
+            valueVec <- c()
+            value <- NULL
+            for (iValues in seq_len(length(tmp[[nDGP]][[iRel]][[iCond]][[iN]]))) { 
+              if (names(tmp[[nDGP]][[iRel]][[iCond]][[iN]][iValues]) == iWeight) {
+                value = tmp[[nDGP]][[iRel]][[iCond]][[iN]][[iValues]]
+                valueVec <- c(valueVec, value)
+              }
+            }
+            scaledWeightsDF_glmnet[(paste0(iRel, "_", iCond, "_", iN, "_", iWeight))] <- valueVec
+          }
+        }
+      }
+    }
+    depMeasures = paste0(resFolder, "/", nDGP, "/dependentMeasures")
+    dfName <- paste0(depMeasures, "/res_", nDGP, "_df_scaledWeightsGLMnet_",iPerf ,".rda")
+    save(scaledWeightsDF_glmnet, file = dfName)
+  }
+  print("done")
+  gc()
+}
