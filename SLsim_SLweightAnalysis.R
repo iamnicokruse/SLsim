@@ -180,15 +180,36 @@ rmCols <- c("train_gbm", "train_glmnet", "train_ranger", "train_rpart",
             "train_intercept", "test_intercept")
 scaledWeights_0.5_0.5_conds <- scaledWeights_0.5_0.5_conds[, !names(scaledWeights_0.5_0.5_conds)
                                                            %in% rmCols]
-scaledWeights_0.5_0.5_inter = subset(scaledWeights_0.5_0.5_conds, dgp == "inter" & rel == "1")
+
+# dgp = inter
+scaledWeights_0.5_0.5_inter <- subset(scaledWeights_0.5_0.5_conds, dgp == "inter" & rel == "0.7")
   
 vPlotData_inter <-  pivot_longer(scaledWeights_0.5_0.5_inter,
                              cols = c(test_gbm, test_glmnet, test_ranger, test_rpart),     
                              names_to = "baselearner",
                              values_to = "scaled_weight")
 vPlotData_inter$baselearner <- gsub("test_", "", vPlotData_inter$baselearner)
+
+# dgp = pwlinear
+scaledWeights_0.5_0.5_pw <- subset(scaledWeights_0.5_0.5_conds, dgp == "pwlinear" & rel == "0.7")
+
+vPlotData_pw <-  pivot_longer(scaledWeights_0.5_0.5_pw,
+                                 cols = c(test_gbm, test_glmnet, test_ranger, test_rpart),     
+                                 names_to = "baselearner",
+                                 values_to = "scaled_weight")
+vPlotData_pw$baselearner <- gsub("test_", "", vPlotData_pw$baselearner)
+
+# dgp = nonlinear3
+scaledWeights_0.5_0.5_nl3 <- subset(scaledWeights_0.5_0.5_conds, dgp == "nonlinear3" & rel == "0.7")
+
+vPlotData_nl3 <-  pivot_longer(scaledWeights_0.5_0.5_nl3,
+                                 cols = c(test_gbm, test_glmnet, test_ranger, test_rpart),     
+                                 names_to = "baselearner",
+                                 values_to = "scaled_weight")
+vPlotData_nl3$baselearner <- gsub("test_", "", vPlotData_nl3$baselearner)
   
 
+# plot functions
 violin_plot <- function(data, plotMeasure, title = "", yLabel = "") {
   ggplot(data, 
          aes(x = baselearner, y = plotMeasure, 
@@ -226,16 +247,49 @@ vPlot_inter <- violin_plot(vPlotData_inter, plotMeasure = vPlotData_inter$scaled
 bPlot_inter <- boxplotCustom(vPlotData_inter, plotMeasure = vPlotData_inter$scaled_weight)
 (bPlot_inter <- violin_themeFunction(bPlot_inter))
 
+vPlot_pw <- violin_plot(vPlotData_pw, plotMeasure = vPlotData_pw$scaled_weight)
+(vPlot_pw <- violin_themeFunction(vPlot_pw))
+bPlot_pw <- boxplotCustom(vPlotData_pw, plotMeasure = vPlotData_pw$scaled_weight)
+(bPlot_pw <- violin_themeFunction(bPlot_pw))
+
+vPlot_nl3 <- violin_plot(vPlotData_nl3, plotMeasure = vPlotData_nl3$scaled_weight)
+(vPlot_nl3 <- violin_themeFunction(vPlot_nl3))
+bPlot_nl3 <- boxplotCustom(vPlotData_nl3, plotMeasure = vPlotData_nl3$scaled_weight)
+(bPlot_nl3 <- violin_themeFunction(bPlot_nl3))
+
 # saving final plots
-ggplot2::ggsave(filename = paste0("plots/violinPlot_inter_rel1.png"),
+ggplot2::ggsave(filename = paste0("plots/violinPlot_inter_rel0.7.png"),
                 plot = vPlot_inter,
                 width = 18.30,
                 height = 13.00,
                 units = "in")
 
-ggplot2::ggsave(filename = paste0("plots/boxPlot_inter_rel1.png"),
+ggplot2::ggsave(filename = paste0("plots/boxPlot_inter_rel0.7.png"),
                 plot = bPlot_inter,
                 width = 18.30,
                 height = 13.00,
                 units = "in")
 
+ggplot2::ggsave(filename = paste0("plots/violinPlot_pw_rel0.7.png"),
+                plot = vPlot_pw,
+                width = 18.30,
+                height = 13.00,
+                units = "in")
+
+ggplot2::ggsave(filename = paste0("plots/boxPlot_pw_rel0.7.png"),
+                plot = bPlot_pw,
+                width = 18.30,
+                height = 13.00,
+                units = "in")
+
+ggplot2::ggsave(filename = paste0("plots/violinPlot_nl3_rel0.7.png"),
+                plot = vPlot_nl3,
+                width = 18.30,
+                height = 13.00,
+                units = "in")
+
+ggplot2::ggsave(filename = paste0("plots/boxPlot_nl3_rel0.7.png"),
+                plot = bPlot_nl3,
+                width = 18.30,
+                height = 13.00,
+                units = "in")
