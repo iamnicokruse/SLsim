@@ -122,6 +122,11 @@ runSLsim <- function(i, data, N, reliability) {
   # supposed to run only one of these conditions)
 
   row_idx <- which(gridFull$data == data & gridFull$N == N & gridFull$reliability == reliability)
+  stopifnot(length(row_idx) == 1) # if conditions are changes, this might help identify mistakes
+                                  # can be adjusted by filtering row_idx from grid_subset which is
+                                  # not yet implemented as simulation is done and code works for 
+                                  # current condition grid -> might has to be adjusted if conditions 
+                                  # change
   
   # extract the run seeds for that row
   run_seeds <- gridFull$run_seeds[[row_idx]]
