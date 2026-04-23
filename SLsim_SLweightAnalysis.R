@@ -9,6 +9,7 @@ library(tidyverse)
 
 # get parameter values and utility functions 
 source("MLsim-main/utils/setParameters.R")
+dgpVec <- c("inter", "pwlinear", "nonlinear3")
 
 # restructuring data to long format 
 for (iDGP in dgpVec) {
@@ -138,28 +139,27 @@ scaledWeights_0.5_0.5_conds <- subset(scaledWeightsGLMnetDFwide,
 # where rowSum = 0 -> weights are NaN (convergence issue with model)
 
 scaledWeights_0.5_0.5_condsDescriptives <- scaledWeights_0.5_0.5_conds %>%
-  group_by(N, R2, dgp, rel
-  ) %>%
+  group_by(N, R2, dgp, rel) %>%
   summarise(
     times_chosen_rpart = sum(test_rpart > 0, na.rm = TRUE),
-    M_rpart  = mean(test_rpart[test_rpart > 0], na.rm = TRUE),
-    SD_rpart = sd(test_rpart[test_rpart > 0], na.rm = TRUE),
-    SE_rpart = SD_rpart / sqrt(times_chosen_rpart),
+    M_rpart  = mean(test_rpart, na.rm = TRUE),
+    SD_rpart = sd(test_rpart, na.rm = TRUE),
+    SE_rpart = SD_rpart / sqrt(n()),
     
     times_chosen_ranger = sum(test_ranger > 0, na.rm = TRUE),
-    M_ranger  = mean(test_ranger[test_ranger > 0], na.rm = TRUE),
-    SD_ranger = sd(test_ranger[test_ranger > 0], na.rm = TRUE),
-    SE_ranger = SD_ranger / sqrt(times_chosen_ranger),
+    M_ranger  = mean(test_ranger, na.rm = TRUE),
+    SD_ranger = sd(test_ranger, na.rm = TRUE),
+    SE_ranger = SD_ranger / sqrt(n()),
     
     times_chosen_gbm = sum(test_gbm > 0, na.rm = TRUE),
-    M_gbm  = mean(test_gbm[test_gbm > 0], na.rm = TRUE),
-    SD_gbm = sd(test_gbm[test_gbm > 0], na.rm = TRUE),
-    SE_gbm = SD_gbm / sqrt(times_chosen_gbm),
+    M_gbm  = mean(test_gbm, na.rm = TRUE),
+    SD_gbm = sd(test_gbm, na.rm = TRUE),
+    SE_gbm = SD_gbm / sqrt(n()),
     
     times_chosen_glmnet = sum(test_glmnet > 0, na.rm = TRUE),
-    M_glmnet  = mean(test_glmnet[test_glmnet > 0], na.rm = TRUE),
-    SD_glmnet = sd(test_glmnet[test_glmnet > 0], na.rm = TRUE),
-    SE_glmnet = SD_glmnet / sqrt(times_chosen_glmnet),
+    M_glmnet  = mean(test_glmnet, na.rm = TRUE),
+    SD_glmnet = sd(test_glmnet, na.rm = TRUE),
+    SE_glmnet = SD_glmnet / sqrt(n()),
     
     .groups = "drop"
   )
