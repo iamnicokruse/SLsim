@@ -16,6 +16,8 @@ corInter <- cor(predsInter)
 
 # dgp = "pwlinear"
 predsPw <- as.data.frame(testList$pwlinear$X_int[, c("Var1", "Var2", "Var3", "Var4", "Var5", "Var6", "Var7")])
-  
+corPw <- cor(predsPw)
+
 # dgp = "nonlinear3"
 predsNl3 <- as.data.frame(testList$nonlinear3$X_int[, c("Var1", "Var2", "Var3", "Var4", "Var5", "Var6", "Var7")])
+corNl3 <- cor(predsNl3)
