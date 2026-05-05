@@ -145,21 +145,21 @@ fitSL <- function(dataList, testList){
       testXallInt$X.Intercept. <- NULL
       
       # create metalearner predictions
-      test_predictons <- data.frame(
+      test_predictions <- data.frame(
                          pred = predict(final_model, testXallInt, na.action = na.pass))
       
       # adds baselearner predicitons
-      test_predictons$glmnet_pred <- predict(models$glmnet, testXallInt)
-      test_predictons$rpart_pred  <- predict(models$rpart, testXint)
-      test_predictons$gbm_pred  <- predict(models$gbm, testXint)
-      test_predictons$rf_pred  <- predict(models$ranger, testXint)
+      test_predictions$glmnet_pred <- predict(models$glmnet, testXallInt)
+      test_predictions$rpart_pred  <- predict(models$rpart, testXint)
+      test_predictions$gbm_pred  <- predict(models$gbm, testXint)
+      test_predictions$rf_pred  <- predict(models$ranger, testXint)
       
       
-      test_perf = data.frame(rbind(glmnet_test = postResample(pred =  test_predictons$glmnet_pred, obs = testList$yMat[, y]),
-                                   rpart_test = postResample(pred = test_predictons$rpart_pred, obs = testList$yMat[, y]),
-                                   gbm_test = postResample(pred = test_predictons$gbm_pred, obs = testList$yMat[, y]),
-                                   rf_test = postResample(pred = test_predictons$rf_pred, obs = testList$yMat[, y]),
-                                   ensemble_test = postResample(pred = test_predictons$pred, obs = testList$yMat[, y]))) %>%
+      test_perf = data.frame(rbind(glmnet_test = postResample(pred =  test_predictions$glmnet_pred, obs = testList$yMat[, y]),
+                                   rpart_test = postResample(pred = test_predictions$rpart_pred, obs = testList$yMat[, y]),
+                                   gbm_test = postResample(pred = test_predictions$gbm_pred, obs = testList$yMat[, y]),
+                                   rf_test = postResample(pred = test_predictions$rf_pred, obs = testList$yMat[, y]),
+                                   ensemble_test = postResample(pred = test_predictions$pred, obs = testList$yMat[, y]))) %>%
         rename(TestRMSE = RMSE) %>%
         rename(TestRsquared = Rsquared) %>%
         rename(TestMAE = MAE)
