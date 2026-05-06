@@ -97,10 +97,11 @@ names(predCorrList) <- apply(corrGrid, 1, function(row) {
   paste(names(row), row, sep = "=", collapse = "_")
 })
 
-
-
-
-
-
-
+# investigating lin_inter0.5_0.5 prediction correlations
+getPredCorrelations(dgp = ,
+                    N = ,
+                    reliability = ,
+                    R2sim = ,
+                    lin_effect = ,
+                    corrPlot = TRUE)
 
