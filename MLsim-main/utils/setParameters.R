@@ -5,7 +5,7 @@ setParam <- list()
 ################################################################################
 # setParam$dgp$nTrain <- 1000
 # setParam$dgp$nTest <- 1
-setParam$dgp$nSamples <- 1 # setParam$dgp$nTrain + setParam$dgp$nTest
+setParam$dgp$nSamples <- 1 
 
 # this is only a technical argument which determines if data is saved in ...
 #   ... either one big rda file which heavily stresses RAM in parallelisation
@@ -17,7 +17,7 @@ setParam$dgp$N <- c(100, 1000, 3000) # number of observations
 # !if 50% of training sample size is used as test sample, test sample sizes vary across N observation conditions
 #   as a result, the empirical SE of Rsquared changes according to N 
 #   -> fix test sample size 
-setParam$dgp$testN <- 1000            # fixed test sample size across all N conditions 
+setParam$dgp$testN <- 10.000         # fixed test sample size across all N conditions 
 
 setParam$dgp$p <- 4               # number of latent variables
 setParam$dgp$interDepth <- c(2) # depth of interactions (so far: only two-way interaction)
@@ -293,10 +293,34 @@ setParam$dgp$reliability <- c(0.7, 1)
 ##### model fit #####
 
 # used algorithms
-setParam$modfit$baselearner <- c("glmnet", "rpart", "ranger", "gbm")
-setParam$modfit$superlearner <- c("nnls","glm","glmnet","ranger")
+setParam$modfit$baselearner <- c("glmnet", "rpart", "ranger", "gbm", "avNNet")
+setParam$modfit$superlearner <- c("nnls","gbm", "mean")
 
 
+# tuning grids
 
+# grid for avNNet
+setParam$modfit$tuneGrids$nnet_grid <- expand.grid(size  = c(1, 2, 3, 5, 10),
+                                                  decay = c(0, 0.001, 0.01, 0.1, 0.3, 0.4),
+                                                  bag   = c(TRUE, FALSE)
+                                                  )
 
+# grid for ranger (rf)
+setParam$modfit$tuneGrids$ranger_grid <- function(nPred) {
+  expand.grid(mtry = c(2, round(sqrt(nPred)), round(nPred/3), 
+                                                             round(nPred/2), round(nPred * 0.257), round(nPred * 0.75)),
+                                                    splitrule = c("variance"),
+                                                    min.node.size = c(5, 10, 20, 30)
+                                                    )
+}
 
+# grid for gbm
+setParam$modfit$tuneGrids$gbm_grid <- expand.grid(interaction.depth = c(1,2,3,5),
+                                                  n.minobsinnode = c(5, 10, 20),
+                                                  n.trees = c(5, seq(10, 40, 10), seq(50, 500, 30), 600),
+                                                  shrinkage = c(0.001, .011, 0.031, seq(.051, .401, .05))
+                                                  )
+
+# grid for rpart
+setParam$modfit$tuneGrids$rpart_grid <- expand.grid(cp = c(0.000, 0.001, 0.003, 0.005, 0.008)
+                                                    )
