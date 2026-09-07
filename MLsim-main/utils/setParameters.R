@@ -301,7 +301,7 @@ setParam$modfit$superlearner <- c("nnls","gbm", "mean")
 
 # grid for avNNet
 setParam$modfit$tuneGrids$nnet_grid <- expand.grid(size  = c(1, 2, 3, 5, 10),
-                                                  decay = c(0, 0.001, 0.01, 0.1, 0.3, 0.4),
+                                                  decay = c(0, 0.001, 0.01, 0.1, 0.3, 0.4, 0.8),
                                                   bag   = c(TRUE, FALSE)
                                                   )
 

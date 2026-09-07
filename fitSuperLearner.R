@@ -22,16 +22,17 @@ fitSL <- function(dataList, testList){
                               allowParallel = F) # must be set to FALSE, as we parallelize the outer resampling
     
     # here the tune grids must be added 
-    start <- Sys.time()
-    models <- caretList(y = dataList$yMat[, y], # same as dataList$yMat[, y]
-                        x = Xint,  # same as Xint
+    # start <- Sys.time()
+    models <- caretList(y = dataList$yMat[, y],
+                        x = Xint,  
                         trControl = trainCtrl,
                         metric = "MAE",
                         tuneList = list(
                           ranger = caretModelSpec(method = "ranger", tuneGrid = setParam$modfit$tuneGrids$ranger_grid(nPred = nPred)),
                           gbm = caretModelSpec(method = "gbm", tuneGrid = setParam$modfit$tuneGrids$gbm_grid),
                           rpart = caretModelSpec(method = "rpart" , tuneGrid = setParam$modfit$tuneGrids$rpart_grid),
-                          nnet = caretModelSpec(method = "avNNet" , tuneGrid = setParam$modfit$tuneGrids$nnet_grid, repeats = 5)
+                          nnet = caretModelSpec(method = "avNNet" , tuneGrid = setParam$modfit$tuneGrids$nnet_grid, repeats = 5, 
+                                                preProcess = c("center", "scale"), linout = TRUE, allowParallel = FALSE)
                           )
                         )
     
@@ -75,17 +76,18 @@ fitSL <- function(dataList, testList){
                              trControl = ensemCtrl
                              )
       } else {
-      # ensemble <- rowMeans(cbind(
-      #   "glmnet" = models$glmnet$,
-      #   "rpart" = models$rpart,
-      #   "gbm" = models$gbm,
-      #   "rf" = models$ranger,
-      #   "nnet" = models$nnet
-      # ))
+      ensemble <- rowMeans(cbind(
+        "glmnet" = models$glmnet$pred$pred[order(models$glmnet$pred$rowIndex)],
+        "rpart" = models$rpart$pred$pred[order(models$rpart$pred$rowIndex)],
+        "gbm" = models$gbm$pred$pred[order(models$gbm$pred$rowIndex)],
+        "rf" = models$ranger$pred$pred[order(models$ranger$pred$rowIndex)],
+        "nnet" = models$nnet$pred$pred[order(models$nnet$pred$rowIndex)]
+      ))
       }
       
-      end <- Sys.time()
-      time <- difftime(end, start)
+      # end <- Sys.time()
+      # time <- difftime(end, start)
+      
       # saving hyperparameters in a list
       if (metalearner == "gbm") {
       hyperparameters <- list(glmnet = models$glmnet$bestTune,
@@ -113,7 +115,8 @@ fitSL <- function(dataList, testList){
         } else if(metalearner == "nnls") {
           weights_metamodel[1:5] <- coef(ensemble$ens_model$finalModel)
           weights_metamodel <- as.matrix(weights_metamodel)
-        } else{paste0("metalearner = mean -> all baselearner receive same weight")
+        } else{
+          weights_metamodel[1:5] <- c(0.2,0.2,0.2,0.2,0.2)
           }   
       
      
@@ -142,40 +145,83 @@ fitSL <- function(dataList, testList){
           mutate(method = recode(method, nnls = "ensemble")) %>%        
           rename(methods = method)                        
       } else {
-        # here we need training performance of baselearners and metamodel = "mean"
+        train_perf = rbind(glmnet_train = getTrainPerf(models$glmnet),
+                           rpart_train = getTrainPerf(models$rpart),
+                           gbm_train = getTrainPerf(models$gbm),
+                           rf_train = getTrainPerf(models$ranger),
+                           nnet_train = getTrainPerf(models$nnet)) %>%
+          rename(methods = method)
+          ens_perf <- postResample(pred = ensemble, obs = dataList$yMat[, y])
+          ens_perfDF = data.frame(TrainRMSE = unname(ens_perf["RMSE"]),
+                                  TrainRsquared = unname(ens_perf["Rsquared"]),
+                                  TrainMAE = unname(ens_perf["MAE"]),
+                                  methods = "ensemble")
+          train_perf = rbind(train_perf, 
+                             ensemble_train = ens_perfDF[c("TrainRMSE", "TrainRsquared", "TrainMAE", "methods")])
       } 
       
       methods = c("glmnet", "rpart", "gbm", "ranger", "avNNet", "ensemble")
       # evaluate final model using testList and comparing performances
-      final_model <- ensemble
-      
-      # predictors with interactions for testing of trained glmnet-model 
-      testXallInt <- data.frame(model.matrix(as.formula(paste0("testList$yMat[, y] ~ (", paste(preds, collapse = "+"), ")^2")), data = testXint))
-      testXallInt$X.Intercept. <- NULL
-      
-      # create metalearner predictions
-      test_predictions <- data.frame(
-                         pred = predict(final_model, testXallInt, na.action = na.pass))
-      
-      # adds baselearner predicitons
-      test_predictions$glmnet_pred <- predict(models$glmnet, testXallInt)
-      test_predictions$rpart_pred  <- predict(models$rpart, testXint)
-      test_predictions$gbm_pred  <- predict(models$gbm, testXint)
-      test_predictions$rf_pred  <- predict(models$ranger, testXint)
-      test_predictions$nnet_pred  <- predict(models$nnet, testXint)
-      
-      
-      test_perf = data.frame(rbind(glmnet_test = postResample(pred =  test_predictions$glmnet_pred, obs = testList$yMat[, y]),
-                                   rpart_test = postResample(pred = test_predictions$rpart_pred, obs = testList$yMat[, y]),
-                                   gbm_test = postResample(pred = test_predictions$gbm_pred, obs = testList$yMat[, y]),
-                                   rf_test = postResample(pred = test_predictions$rf_pred, obs = testList$yMat[, y]),
-                                   nnet_test = postResample(pred = test_predictions$nnet_pred, obs = testList$yMat[, y]),
-                                   ensemble_test = postResample(pred = test_predictions$pred, obs = testList$yMat[, y]))) %>%
-        rename(TestRMSE = RMSE) %>%
-        rename(TestRsquared = Rsquared) %>%
-        rename(TestMAE = MAE)
-      
+      if (metalearner != "mean") {
+        final_model <- ensemble
+        
+        # predictors with interactions for testing of trained glmnet-model 
+        testXallInt <- data.frame(model.matrix(as.formula(paste0("testList$yMat[, y] ~ (", paste(preds, collapse = "+"), ")^2")), data = testXint))
+        testXallInt$X.Intercept. <- NULL
+        
+        # create metalearner predictions
+        test_predictions <- data.frame(
+          pred = predict(final_model, testXallInt, na.action = na.pass))
+        
+        # adds baselearner predictions
+        test_predictions$glmnet_pred <- predict(models$glmnet, testXallInt)
+        test_predictions$rpart_pred  <- predict(models$rpart, testXint)
+        test_predictions$gbm_pred  <- predict(models$gbm, testXint)
+        test_predictions$rf_pred  <- predict(models$ranger, testXint)
+        test_predictions$nnet_pred  <- predict(models$nnet, testXint)
+        
+        
+        test_perf = data.frame(rbind(glmnet_test = postResample(pred =  test_predictions$glmnet_pred, obs = testList$yMat[, y]),
+                                     rpart_test = postResample(pred = test_predictions$rpart_pred, obs = testList$yMat[, y]),
+                                     gbm_test = postResample(pred = test_predictions$gbm_pred, obs = testList$yMat[, y]),
+                                     rf_test = postResample(pred = test_predictions$rf_pred, obs = testList$yMat[, y]),
+                                     nnet_test = postResample(pred = test_predictions$nnet_pred, obs = testList$yMat[, y]),
+                                     ensemble_test = postResample(pred = test_predictions$pred, obs = testList$yMat[, y]))) %>%
+          rename(TestRMSE = RMSE) %>%
+          rename(TestRsquared = Rsquared) %>%
+          rename(TestMAE = MAE)
+        
         test_perf <- cbind(test_perf, methods)
+      } else {
+        # predictors with interactions for testing of trained glmnet-model 
+        testXallInt <- data.frame(model.matrix(as.formula(paste0("testList$yMat[, y] ~ (", paste(preds, collapse = "+"), ")^2")), data = testXint))
+        testXallInt$X.Intercept. <- NULL
+        
+        # create baselearner predictions
+        test_predictions <- data.frame(
+        glmnet_pred = predict(models$glmnet, testXallInt),
+        rpart_pred  = predict(models$rpart, testXint),
+        gbm_pred  = predict(models$gbm, testXint),
+        rf_pred  = predict(models$ranger, testXint),
+        nnet_pred = predict(models$nnet, testXint)
+        )
+        
+        # add metalearner predictions
+        test_predictions$pred <- rowMeans(test_predictions[1:5])
+        
+        test_perf = data.frame(rbind(glmnet_test = postResample(pred =  test_predictions$glmnet_pred, obs = testList$yMat[, y]),
+                                     rpart_test = postResample(pred = test_predictions$rpart_pred, obs = testList$yMat[, y]),
+                                     gbm_test = postResample(pred = test_predictions$gbm_pred, obs = testList$yMat[, y]),
+                                     rf_test = postResample(pred = test_predictions$rf_pred, obs = testList$yMat[, y]),
+                                     nnet_test = postResample(pred = test_predictions$nnet_pred, obs = testList$yMat[, y]),
+                                     ensemble_test = postResample(pred = test_predictions$pred, obs = testList$yMat[, y]))) %>%
+          rename(TestRMSE = RMSE) %>%
+          rename(TestRsquared = Rsquared) %>%
+          rename(TestMAE = MAE)
+        
+        test_perf <- cbind(test_perf, methods)
+      }
+      
       
       # train_perf$condition <- paste0(yVec[y], "_sl_algorithm_", metalearner)  # add sample name to train-output
       # test_perf$condition  <- paste0(yVec[y], "_sl_algorithm_", metalearner)  # add sample name to test-output
