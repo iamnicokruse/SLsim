@@ -5,7 +5,8 @@ setParam <- list()
 ################################################################################
 # setParam$dgp$nTrain <- 1000
 # setParam$dgp$nTest <- 1
-setParam$dgp$nSamples <- 1 
+setParam$dgp$nSamples <- 1 # only this is needed as sample amount is 
+                           # controlled by master script.
 
 # this is only a technical argument which determines if data is saved in ...
 #   ... either one big rda file which heavily stresses RAM in parallelisation

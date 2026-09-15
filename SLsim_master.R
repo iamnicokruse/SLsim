@@ -39,6 +39,22 @@ future_packages <- c(
   "caret","ranger","gbm","glmnet", "nnls"
 )
 
+# Save complete R session information
+session_file <- paste0(
+  "logs/sessionInfo_",
+  Sys.getenv("SLURM_JOB_ID"),
+  ".txt"
+)
+
+sink(session_file)
+cat("SLURM Job ID:", Sys.getenv("SLURM_JOB_ID"), "\n")
+cat("Node:", Sys.getenv("SLURMD_NODENAME"), "\n")
+cat("R version:", R.version.string, "\n\n")
+cat("Library paths:\n")
+print(.libPaths())
+cat("\nSession information:\n")
+sessionInfo()
+sink()
 
 # parameters
 source("MLsim-main/utils/setParameters.R")
