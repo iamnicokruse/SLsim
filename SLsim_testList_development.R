@@ -48,10 +48,11 @@ gridFull <- rbind(gridFull,
 
 # check uniqueness of set seeds
 length(unique(gridFull$sampleSeed))
+gridFull$testN = rep(10000, times = nrow(gridFull))
 
 # sample data
-createData <- function(data, N, reliability){
-  
+createData <- function(data, testN, reliability){
+  N = testN
   if (data == "inter"){
     environment(sampleInteractionData) <- environment()  
   } else if (data == "nonlinear3") {
@@ -72,5 +73,10 @@ createData <- function(data, N, reliability){
 }
 
 pTrash <- 25
-testList <- do.call(mapply, c(FUN = createData, gridFull[,1:3]))
+testList <- do.call(mapply, c(FUN = createData, gridFull[,c(1, 5, 3)])) # 1 = data,
+#                                                                         5 = testN,
+#                                                                         3 = reliability
+# structure is dgp - rel 0.7 - N (x3 for N = 100, 1000, 3000)
+#                  - rel 1.0 - N (x3 for N = 100, 1000, 3000)
+#              dgp ...
 save(testList, file = "testList.rda")

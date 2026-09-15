@@ -136,21 +136,57 @@ runSLsim <- function(i, data, N, reliability) {
   testList = get(load("testList.rda"))
   if(data == "inter"){
     if(reliability == "0.7"){
-      testList = testList[1]
+      if(N == 100){
+        testList = testList[1]
+      } else if(N == 1000){
+        testList = testList[2]
+      } else if(N == 3000){
+        testList = testList[3]
+      }
     } else if(reliability == "1"){
-      testList = testList[2]
+      if(N == 100){
+        testList = testList[4]
+      } else if(N == 1000){
+        testList = testList[5]
+      } else if(N == 3000){
+        testList = testList[6]
+      }
     }
   } else if(data == "pwlinear"){
     if(reliability == "0.7"){
-      testList = testList[3]
+      if(N == 100){
+        testList = testList[7]
+      } else if(N == 1000){
+        testList = testList[8]
+      } else if(N == 3000){
+        testList = testList[9]
+      }
     } else if(reliability == "1"){
-      testList = testList[4]
+      if(N == 100){
+        testList = testList[10]
+      } else if(N == 1000){
+        testList = testList[11]
+      } else if(N == 3000){
+        testList = testList[12]
+      }
     }
   } else if(data == "nonlinear3"){
     if(reliability == "0.7"){
-      testList = testList[5]
+      if(N == 100){
+        testList = testList[13]
+      } else if(N == 1000){
+        testList = testList[14]
+      } else if(N == 3000){
+        testList = testList[15]
+      }
     } else if(reliability == "1"){
-      testList = testList[6]
+      if(N == 100){
+        testList = testList[16]
+      } else if(N == 1000){
+        testList = testList[17]
+      } else if(N == 3000){
+        testList = testList[18]
+      }
     }
   }
   
