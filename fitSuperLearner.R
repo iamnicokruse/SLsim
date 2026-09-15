@@ -26,7 +26,7 @@ fitSL <- function(dataList, testList){
     models <- caretList(y = dataList$yMat[, y],
                         x = Xint,  
                         trControl = trainCtrl,
-                        metric = "MAE",
+                        metric = "RMSE",
                         tuneList = list(
                           ranger = caretModelSpec(method = "ranger", tuneGrid = setParam$modfit$tuneGrids$ranger_grid(nPred = nPred)),
                           gbm = caretModelSpec(method = "gbm", tuneGrid = setParam$modfit$tuneGrids$gbm_grid),
@@ -44,9 +44,9 @@ fitSL <- function(dataList, testList){
     base_glmnet <- train(y = dataList$yMat[, y],
                          x = XallInt,
                          method = "glmnet",
-                         metric = "MAE",
+                         metric = "RMSE",
                          trControl = trainCtrl,
-                         tuneLength = 25
+                         tuneGrid = setParam$modfit$tuneGrids$glmnet_grid
                          )
     
     models[["glmnet"]]<- base_glmnet
@@ -65,14 +65,14 @@ fitSL <- function(dataList, testList){
       if(metalearner == "gbm"){
       ensemble <- caretStack(models,
                              method = metalearner,
-                             metric = "MAE", 
+                             metric = "RMSE", 
                              trControl = ensemCtrl,
                              tuneGrid = setParam$modfit$tuneGrids$gbm_grid
       )                                                      
       } else if (metalearner == "nnls") {
       ensemble <- caretStack(models,
                              method = metalearner,           # if changed, also change weight-extraction and ensemble recoding in train_perf
-                             metric = "MAE", 
+                             metric = "RMSE", 
                              trControl = ensemCtrl
                              )
       } else {

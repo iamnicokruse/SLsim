@@ -299,19 +299,24 @@ setParam$modfit$superlearner <- c("nnls","gbm", "mean")
 
 # tuning grids
 
+# grid for glmnet (enet)
+setParam$modfit$tuneGrids$glmnet_grid <- expand.grid(alpha = seq(0, 1, length.out = 20),
+                                                   lambda = 10^seq(-3, 1, length = 100)
+                                                   )
+
 # grid for avNNet
 setParam$modfit$tuneGrids$nnet_grid <- expand.grid(size  = c(1, 2, 3, 5, 10),
-                                                  decay = c(0, 0.001, 0.01, 0.1, 0.3, 0.4, 0.8),
+                                                  decay =  10^seq(-3, 1, length = 15),
                                                   bag   = c(TRUE, FALSE)
                                                   )
 
 # grid for ranger (rf)
 setParam$modfit$tuneGrids$ranger_grid <- function(nPred) {
-  expand.grid(mtry = c(2, round(sqrt(nPred)), round(nPred/3), 
-                                                             round(nPred/2), round(nPred * 0.257), round(nPred * 0.75)),
-                                                    splitrule = c("variance"),
-                                                    min.node.size = c(5, 10, 20, 30)
-                                                    )
+  expand.grid(mtry = c(2, floor(sqrt(nPred)), floor(nPred/3),
+                       floor(nPred/2), floor(nPred * 0.75)),
+              splitrule = c("variance"),
+              min.node.size = c(5, 10, 20)
+              )
 }
 
 # grid for gbm
