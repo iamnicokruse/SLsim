@@ -37,9 +37,25 @@ library(glmnetUtils)
 # package string for future_lapply
 future_packages <- c(
   "Matrix","mvtnorm","truncnorm",
-  "caret","ranger","gbm","glmnet", "nnls"
+  "caret","ranger","gbm","nnet","glmnet", "nnls"
 )
 
+# Save complete R session information
+session_file <- paste0(
+  "logs/sessionInfo_",
+  Sys.getenv("SLURM_JOB_ID"),
+  ".txt"
+)
+
+sink(session_file)
+cat("SLURM Job ID:", Sys.getenv("SLURM_JOB_ID"), "\n")
+cat("Node:", Sys.getenv("SLURMD_NODENAME"), "\n")
+cat("R version:", R.version.string, "\n\n")
+cat("Library paths:\n")
+print(.libPaths())
+cat("\nSession information:\n")
+sessionInfo()
+sink()
 
 # parameters
 source("MLsim-main/utils/setParameters.R")
@@ -138,55 +154,55 @@ runSLsim <- function(i, data, N, reliability) {
   if(data == "inter"){
     if(reliability == "0.7"){
       if(N == 100){
-        testList = testList[1]
+        testList = testList[[1]]
       } else if(N == 1000){
-        testList = testList[2]
+        testList = testList[[2]]
       } else if(N == 3000){
-        testList = testList[3]
+        testList = testList[[3]]
       }
     } else if(reliability == "1"){
       if(N == 100){
-        testList = testList[4]
+        testList = testList[[4]]
       } else if(N == 1000){
-        testList = testList[5]
+        testList = testList[[5]]
       } else if(N == 3000){
-        testList = testList[6]
+        testList = testList[[6]]
       }
     }
   } else if(data == "pwlinear"){
     if(reliability == "0.7"){
       if(N == 100){
-        testList = testList[7]
+        testList = testList[[7]]
       } else if(N == 1000){
-        testList = testList[8]
+        testList = testList[[8]]
       } else if(N == 3000){
-        testList = testList[9]
+        testList = testList[[9]]
       }
     } else if(reliability == "1"){
       if(N == 100){
-        testList = testList[10]
+        testList = testList[[10]]
       } else if(N == 1000){
-        testList = testList[11]
+        testList = testList[[11]]
       } else if(N == 3000){
-        testList = testList[12]
+        testList = testList[[12]]
       }
     }
   } else if(data == "nonlinear3"){
     if(reliability == "0.7"){
       if(N == 100){
-        testList = testList[13]
+        testList = testList[[13]]
       } else if(N == 1000){
-        testList = testList[14]
+        testList = testList[[14]]
       } else if(N == 3000){
-        testList = testList[15]
+        testList = testList[[15]]
       }
     } else if(reliability == "1"){
       if(N == 100){
-        testList = testList[16]
+        testList = testList[[16]]
       } else if(N == 1000){
-        testList = testList[17]
+        testList = testList[[17]]
       } else if(N == 3000){
-        testList = testList[18]
+        testList = testList[[18]]
       }
     }
   }
