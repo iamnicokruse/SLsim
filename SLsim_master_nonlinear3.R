@@ -206,7 +206,7 @@ runSLsim <- function(i, data, N, reliability) {
       }
     }
   }
-  
+  gc()
   # simulate data as train samples
   dataList <- do.call(mapply, c(FUN = createData, gridFull[row_idx, !colnames(gridFull) %in% c("run_seeds","sampleSeed")]))
     
