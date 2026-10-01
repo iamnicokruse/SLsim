@@ -307,7 +307,7 @@ setParam$modfit$tuneGrids$glmnet_grid <- expand.grid(alpha = seq(0, 1, length.ou
 
 # grid for avNNet
 setParam$modfit$tuneGrids$nnet_grid <- expand.grid(size  = c(1, 2, 3, 5, 10),
-                                                  decay =  10^seq(-3, 1, length = 15),
+                                                  decay =  10^seq(-3, 0.8, length = 10),
                                                   bag   = c(TRUE, FALSE)
                                                   )
 

@@ -139,7 +139,11 @@ runSLsim <- function(i, data, N, reliability) {
   # supposed to run only one of these conditions)
 
   row_idx <- which(gridFull$data == data & gridFull$N == N & gridFull$reliability == reliability)
-  stopifnot(length(row_idx) == 1)
+  stopifnot(length(row_idx) == 1) # if conditions are changes, this might help identify mistakes
+                                  # can be adjusted by filtering row_idx from grid_subset which is
+                                  # not yet implemented as simulation is done and code works for 
+                                  # current condition grid -> might has to be adjusted if conditions 
+                                  # change
   
   # extract the run seeds for that row
   run_seeds <- gridFull$run_seeds[[row_idx]]
@@ -152,7 +156,7 @@ runSLsim <- function(i, data, N, reliability) {
   # load pre-saved test samples
   testList = get(load("testList.rda"))
   if(data == "inter"){
-    if(reliability == "0.7"){
+    if(reliability == 0.7){
       if(N == 100){
         testList = testList[[1]]
       } else if(N == 1000){
@@ -160,7 +164,7 @@ runSLsim <- function(i, data, N, reliability) {
       } else if(N == 3000){
         testList = testList[[3]]
       }
-    } else if(reliability == "1"){
+    } else if(reliability == 1){
       if(N == 100){
         testList = testList[[4]]
       } else if(N == 1000){
@@ -170,7 +174,7 @@ runSLsim <- function(i, data, N, reliability) {
       }
     }
   } else if(data == "pwlinear"){
-    if(reliability == "0.7"){
+    if(reliability == 0.7){
       if(N == 100){
         testList = testList[[7]]
       } else if(N == 1000){
@@ -178,17 +182,17 @@ runSLsim <- function(i, data, N, reliability) {
       } else if(N == 3000){
         testList = testList[[9]]
       }
-    } else if(reliability == "1"){
-      if(N == 100){
-        testList = testList[[10]]
-      } else if(N == 1000){
-        testList = testList[[11]]
-      } else if(N == 3000){
-        testList = testList[[12]]
+      } else if(reliability == 1){
+        if(N == 100){
+          testList = testList[[10]]
+        } else if(N == 1000){
+          testList = testList[[11]]
+        } else if(N == 3000){
+          testList = testList[[12]]
+        }
       }
-    }
   } else if(data == "nonlinear3"){
-    if(reliability == "0.7"){
+    if(reliability == 0.7){
       if(N == 100){
         testList = testList[[13]]
       } else if(N == 1000){
@@ -196,28 +200,27 @@ runSLsim <- function(i, data, N, reliability) {
       } else if(N == 3000){
         testList = testList[[15]]
       }
-    } else if(reliability == "1"){
-      if(N == 100){
-        testList = testList[[16]]
-      } else if(N == 1000){
-        testList = testList[[17]]
-      } else if(N == 3000){
-        testList = testList[[18]]
+      } else if(reliability == 1){
+        if(N == 100){
+          testList = testList[[16]]
+        } else if(N == 1000){
+          testList = testList[[17]]
+        } else if(N == 3000){
+          testList = testList[[18]]
+        }
       }
     }
-  }
   gc()
   # simulate data as train samples
   dataList <- do.call(mapply, c(FUN = createData, gridFull[row_idx, !colnames(gridFull) %in% c("run_seeds","sampleSeed")]))
     
     # use both to train and validate super learners
-    res <- mapply(
-      FUN = fitSL,
-      dataList = dataList,
-      testList = testList,
-      SIMPLIFY = FALSE
-    )
-    
+    res <- lapply(
+      dataList,
+      fitSL,
+      testList = testList
+      )
+
     folder <- paste0("results/", data, "/", block_id)
     if (!dir.exists(folder)) dir.create(folder, recursive = TRUE)
     res_name <- paste0(folder, "/res_", data, "_N", N, "_rel", reliability, "_sample", i, ".rda")
@@ -228,8 +231,8 @@ runSLsim <- function(i, data, N, reliability) {
 plan(multisession, workers = nCoresSampling) # if not run with Rstudio but R, multicore can be used (FORKING)
 
 pTrash <- setParam$dgp$pTrash
-dataType <- "nonlinear3"
-
+dataType <- "inter"
+reliability <- setParam$dgp$reliability[1]
 
 # Create seed strings based on sampleSeeds for reproducibility
 gridFull$run_seeds <- lapply(gridFull$sampleSeed, function(s) {
@@ -237,10 +240,10 @@ gridFull$run_seeds <- lapply(gridFull$sampleSeed, function(s) {
   sample.int(.Machine$integer.max, nSamples_total)
 })
 
-run_seeds <- gridFull$run_seeds[gridFull$data == dataType]
+run_seeds <- gridFull$run_seeds[gridFull$data == dataType & gridFull$reliability == reliability]
 
 # create subset of gridFull to run simulation with for()-Loop for only one dgp
-grid_subset <- gridFull[gridFull$data == dataType, ]
+grid_subset <- gridFull[gridFull$data == dataType & gridFull$reliability == reliability, ]
 
 # Run simulation in parallel
 start <- Sys.time()
