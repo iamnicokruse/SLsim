@@ -1,7 +1,8 @@
 #!/bin/bash
 #SBATCH --job-name=SLsim_nonlinear307
-#SBATCH --time=90:00:00
+#SBATCH --time=92:00:00
 #SBATCH --nodes=1
+#SBATCH --cpus-per-task=10
 #SBATCH --array=6-10
 #SBATCH --mem=32G
 #SBATCH --partition=pub23
